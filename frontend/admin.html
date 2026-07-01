@@ -301,6 +301,45 @@
         color: var(--azul);
         letter-spacing: -0.02em;
     }
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 14px 18px;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px -14px rgba(13,44,84,0.28);
+    border-left: 4px solid var(--celeste);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1a202c;
+    min-width: 240px;
+    max-width: 360px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity .25s ease, transform .25s ease;
+    pointer-events: auto;
+}
+.toast.toast-visible { opacity: 1; transform: translateX(0); }
+.toast.toast-hide { opacity: 0; transform: translateX(20px); }
+
+.toast-success { border-left-color: var(--verde); }
+.toast-error { border-left-color: var(--rojo); }
+.toast-info { border-left-color: var(--celeste); }
+
+.toast-icon { font-size: 16px; flex-shrink: 0; }
+.toast-msg { line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -413,11 +452,15 @@
 
     // Wrapper de fetch que agrega el token para rutas protegidas (POST/PUT/DELETE)
     async function authFetch(url, opts = {}) {
-        opts.headers = { ...(opts.headers || {}), 'x-admin-token': getToken() };
-        const res = await fetch(url, opts);
-        if (res.status === 401) { logout(); throw new Error('Sesión expirada'); }
-        return res;
+    opts.headers = { ...(opts.headers || {}), 'x-admin-token': getToken() };
+    const res = await fetch(url, opts);
+    if (res.status === 401) {
+        showToast('Tu sesión expiró. Volvé a iniciar sesión.', 'error');
+        logout();
+        throw new Error('Sesión expirada');
     }
+    return res;
+}
 
     // -------------------- TABS --------------------
     function tab(n) {
@@ -437,22 +480,25 @@
     }
 
     async function saveV() {
-        const body = {
-            destino: document.getElementById('v-dest').value,
-            empresa: document.getElementById('v-emp').value,
-            tipo: document.getElementById('v-tipo').value,
-            moneda: document.getElementById('v-mon').value,
-            precio: document.getElementById('v-pre').value,
-            fecha: document.getElementById('v-fec').value,
-            fecha_regreso: document.getElementById('v-fec-vuelta').value,
-            imagen_url: document.getElementById('v-img').value
-        };
-        if (!body.destino || !body.precio || !body.fecha) { alert('Completá destino, monto y fecha de salida'); return; }
+    const body = {
+        destino: document.getElementById('v-dest').value,
+        empresa: document.getElementById('v-emp').value,
+        tipo: document.getElementById('v-tipo').value,
+        moneda: document.getElementById('v-mon').value,
+        precio: document.getElementById('v-pre').value,
+        fecha: document.getElementById('v-fec').value,
+        fecha_regreso: document.getElementById('v-fec-vuelta').value,
+        imagen_url: document.getElementById('v-img').value
+    };
+    if (!body.destino || !body.precio || !body.fecha) { showToast('Completá destino, monto y fecha de salida', 'error'); return; }
+
+    try {
         const res = await authFetch(`${API}/admin/nuevo-viaje`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json();
-        if(res.ok) { alert("¡Publicado!"); getVAdmin(); }
-        else alert('Error: ' + data.error);
-    }
+        if (res.ok) { showToast('¡Viaje publicado con éxito!', 'success'); getVAdmin(); }
+        else showToast('Error: ' + (data.error || JSON.stringify(data.detalles)), 'error');
+    } catch (e) { console.error('saveV falló:', e); }
+}
 
     async function getVAdmin() {
         const res = await fetch(`${API}/admin/ranking`);
@@ -493,19 +539,20 @@
     }
 
     async function saveR() {
-        if (!document.getElementById('r-id-c').value) { alert('Seleccioná un cliente de la lista de sugerencias'); return; }
-        if (!document.getElementById('r-via').value) { alert('Seleccioná un destino'); return; }
-        const body = {
-            id_cliente: document.getElementById('r-id-c').value,
-            id_salida: document.getElementById('r-via').value,
-            cantidad_pasajeros: document.getElementById('r-can').value,
-            monto_total: document.getElementById('r-tot').value,
-            monto_pagado: document.getElementById('r-pag').value
-        };
-        const res = await authFetch(`${API}/admin/nueva-reserva`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-        const data = await res.json();
-        if (res.ok) { alert("Reserva Guardada"); tab(3); actualizarRadarGlobal(); }
-    }
+    if (!document.getElementById('r-id-c').value) { showToast('Seleccioná un cliente de la lista de sugerencias', 'error'); return; }
+    if (!document.getElementById('r-via').value) { showToast('Seleccioná un destino', 'error'); return; }
+    const body = {
+        id_cliente: document.getElementById('r-id-c').value,
+        id_salida: document.getElementById('r-via').value,
+        cantidad_pasajeros: document.getElementById('r-can').value,
+        monto_total: document.getElementById('r-tot').value,
+        monto_pagado: document.getElementById('r-pag').value
+    };
+    const res = await authFetch(`${API}/admin/nueva-reserva`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (res.ok) { showToast('Reserva guardada correctamente', 'success'); tab(3); actualizarRadarGlobal(); }
+    else showToast('Error: ' + data.error, 'error');
+}
 
     async function getC() {
         const res = await fetch(`${API}/admin/clientes`);
@@ -516,12 +563,15 @@
     }
 
     async function saveC() {
-        if (!document.getElementById('c-ape').value || !document.getElementById('c-dni').value) { alert('Apellido y DNI son obligatorios'); return; }
-        const res = await authFetch(`${API}/admin/nuevo-cliente`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({apellido:document.getElementById('c-ape').value, nombre:document.getElementById('c-nom').value, dni:document.getElementById('c-dni').value, telefono:document.getElementById('c-tel').value}) });
-        const data = await res.json();
-        if (res.ok) { document.getElementById('c-ape').value=''; document.getElementById('c-nom').value=''; document.getElementById('c-dni').value=''; document.getElementById('c-tel').value=''; getC(); }
-        else alert('Error: ' + data.error);
-    }
+    if (!document.getElementById('c-ape').value || !document.getElementById('c-dni').value) { showToast('Apellido y DNI son obligatorios', 'error'); return; }
+    const res = await authFetch(`${API}/admin/nuevo-cliente`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({apellido:document.getElementById('c-ape').value, nombre:document.getElementById('c-nom').value, dni:document.getElementById('c-dni').value, telefono:document.getElementById('c-tel').value}) });
+    const data = await res.json();
+    if (res.ok) {
+        document.getElementById('c-ape').value=''; document.getElementById('c-nom').value=''; document.getElementById('c-dni').value=''; document.getElementById('c-tel').value='';
+        showToast('Cliente guardado', 'success');
+        getC();
+    } else showToast('Error: ' + data.error, 'error');
+}
 
     async function getCCache() { const res = await fetch(`${API}/admin/clientes`); cliCache = await res.json(); }
 
@@ -539,6 +589,24 @@
             });
         } else sug.style.display="none";
     }
+function showToast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    const iconos = { success: '✅', error: '⚠️', info: 'ℹ️' };
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span class="toast-icon">${iconos[type] || iconos.info}</span><span class="toast-msg">${message}</span>`;
+    container.appendChild(toast);
+
+    // pequeño delay para que la transición de entrada se dispare
+    requestAnimationFrame(() => toast.classList.add('toast-visible'));
+
+    setTimeout(() => {
+        toast.classList.remove('toast-visible');
+        toast.classList.add('toast-hide');
+        setTimeout(() => toast.remove(), 250); // espera a que termine la transición de salida
+    }, duration);
+}
 function formatMonto(valor) {
     if (valor === null || valor === undefined || valor === '') return '$0';
     const num = Number(valor);
@@ -591,11 +659,11 @@ function renderHistorial(data) {
 async function registrarPago(id, montoTotal, montoPagado) {
     const saldoPendiente = Number(montoTotal) - Number(montoPagado);
     const input = prompt(`Saldo pendiente: ${formatMonto(saldoPendiente)}\n¿Cuánto querés registrar?`);
-    if (input === null) return; // canceló el prompt
+    if (input === null) return;
 
     const monto = parseFloat(input.replace(',', '.'));
-    if (isNaN(monto) || monto <= 0) { alert('Ingresá un monto válido mayor a 0'); return; }
-    if (monto > saldoPendiente) { alert(`Ese monto supera el saldo pendiente (${formatMonto(saldoPendiente)})`); return; }
+    if (isNaN(monto) || monto <= 0) { showToast('Ingresá un monto válido mayor a 0', 'error'); return; }
+    if (monto > saldoPendiente) { showToast(`Ese monto supera el saldo pendiente (${formatMonto(saldoPendiente)})`, 'error'); return; }
 
     try {
         const res = await authFetch(`${API}/admin/reservas/${id}/pago`, {
@@ -604,13 +672,11 @@ async function registrarPago(id, montoTotal, montoPagado) {
             body: JSON.stringify({ monto })
         });
         const data = await res.json();
-        if (!res.ok) { alert('Error: ' + data.error); return; }
+        if (!res.ok) { showToast('Error: ' + data.error, 'error'); return; }
 
-        alert('Pago registrado correctamente');
-        getH(); // refresca la tabla con el nuevo estado
-    } catch (e) {
-        console.error('registrarPago falló:', e);
-    }
+        showToast('Pago registrado correctamente', 'success');
+        getH();
+    } catch (e) { console.error('registrarPago falló:', e); }
 }
 function filtrarReservas() {
     const texto = document.getElementById('buscar-cliente').value.trim().toLowerCase();
@@ -769,6 +835,6 @@ function renderRadarBonos(alertas) {
 
 </script>
 
-
+<div id="toast-container"></div>
 </body>
 </html>
