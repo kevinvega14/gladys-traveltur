@@ -5,25 +5,189 @@
     <title>Gladys Traveltur - Ofertas 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --azul: #0d2c54; --celeste: #3182ce; --gris: #f7fafc; }
-        body { background: var(--gris); font-family: 'Inter', sans-serif; margin: 0; color: #1a202c; }
-        .hero { background: linear-gradient(rgba(13,44,84,0.7), rgba(13,44,84,0.7)), url('Fondos/bariloche.jpg') center/cover; padding: 80px 20px; text-align: center; color: white; }
-        .hero h1 { margin: 0; font-size: 40px; font-weight: 900; text-transform: uppercase; }
-        .controles { background: white; width: 90%; max-width: 1000px; margin: -30px auto 40px; padding: 20px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: flex-end; }
-        .campo { display: flex; flex-direction: column; gap: 5px; font-size: 10px; font-weight: 800; color: #718096; text-transform: uppercase; }
-        input, select { padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: inherit; }
-        .btn-bus { background: var(--celeste); color: white; border: none; padding: 10px 25px; border-radius: 6px; font-weight: 700; cursor: pointer; }
-        .section-title { text-align: center; font-size: 24px; color: var(--azul); font-weight: 900; margin: 50px 0 20px; }
-        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; margin: auto; padding-bottom: 50px; }
-        .card { background: white; border-radius: 15px; width: 300px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .card-img { width: 100%; height: 180px; object-fit: cover; background: #e2e8f0; }
-        .card-body { padding: 20px; }
-        .card-body h3 { margin: 5px 0; text-transform: uppercase; font-size: 18px; color: var(--azul); }
-        .card-body .empresa { font-size: 11px; color: #a0aec0; font-weight: 700; text-transform: uppercase; }
-        .price { font-size: 22px; font-weight: 900; color: #1a202c; margin-top: 10px; }
-        .btn-wa { background: #25d366; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; width: 100%; margin-top: 15px; display: block; text-decoration: none; text-align: center; box-sizing: border-box; }
-        .empty { text-align: center; color: #a0aec0; width: 100%; }
-    </style>
+    :root {
+        --azul: #0d2c54;
+        --celeste: #3182ce;
+        --verde: #16a34a;
+        --fondo: #f7f8fa;
+        --card: #ffffff;
+        --borde: #eef0f3;
+        --texto-sec: #6b7280;
+        --sombra: 0 20px 50px -20px rgba(13,44,84,0.18);
+        --sombra-hover: 0 24px 60px -18px rgba(13,44,84,0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        background: var(--fondo);
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        color: #1a202c;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .hero {
+        background: linear-gradient(rgba(13,44,84,0.72), rgba(13,44,84,0.72)), url('Fondos/bariloche.jpg') center/cover;
+        padding: 100px 20px 130px;
+        text-align: center;
+        color: white;
+    }
+    .hero h1 {
+        margin: 0;
+        font-size: clamp(32px, 5vw, 44px);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+    }
+    .hero p {
+        margin: 10px 0 0;
+        font-size: 15px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.85);
+    }
+
+    .controles {
+        background: var(--card);
+        width: 92%;
+        max-width: 1020px;
+        margin: -60px auto 50px;
+        padding: 26px;
+        border-radius: 20px;
+        box-shadow: var(--sombra);
+        border: 1px solid var(--borde);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: center;
+        align-items: flex-end;
+    }
+
+    .campo {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--texto-sec);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    input, select {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--borde);
+        font-family: inherit;
+        font-size: 14px;
+        background: #fbfbfc;
+        transition: border-color .15s ease, box-shadow .15s ease;
+        min-width: 150px;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: var(--celeste);
+        box-shadow: 0 0 0 3px rgba(49,130,206,0.15);
+        background: white;
+    }
+
+    .btn-bus {
+        background: var(--azul);
+        color: white;
+        border: none;
+        padding: 13px 28px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: transform .15s ease, background .15s ease;
+    }
+    .btn-bus:hover { background: var(--celeste); transform: translateY(-1px); }
+
+    .section-title {
+        text-align: center;
+        font-size: 22px;
+        color: var(--azul);
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        margin: 60px 0 28px;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        gap: 24px;
+        max-width: 1200px;
+        margin: auto;
+        padding: 0 24px 60px;
+    }
+
+    .card {
+        background: var(--card);
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--borde);
+        box-shadow: 0 2px 8px rgba(13,44,84,0.05);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--sombra-hover);
+    }
+
+    .card-img { width: 100%; height: 190px; object-fit: cover; background: #e2e8f0; display: block; }
+
+    .card-body { padding: 22px; }
+    .card-body h3 {
+        margin: 6px 0 2px;
+        text-transform: uppercase;
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--azul);
+        letter-spacing: -0.01em;
+    }
+    .card-body .empresa {
+        font-size: 11px;
+        color: #a0aec0;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .price {
+        font-size: 24px;
+        font-weight: 900;
+        color: #1a202c;
+        margin-top: 12px;
+        letter-spacing: -0.02em;
+    }
+
+    .btn-wa {
+        background: var(--verde);
+        color: white;
+        border: none;
+        padding: 13px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 13px;
+        width: 100%;
+        margin-top: 16px;
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        box-sizing: border-box;
+        transition: background .15s ease, transform .15s ease;
+    }
+    .btn-wa:hover { background: #15803d; transform: translateY(-1px); }
+
+    .empty {
+        text-align: center;
+        color: #a0aec0;
+        width: 100%;
+        font-size: 14px;
+        padding: 30px;
+    }
+</style>
 </head>
 <body>
     <div class="hero"><h1>GLADYS TRAVELTUR</h1><p>Tu próxima aventura comienza aquí</p></div>

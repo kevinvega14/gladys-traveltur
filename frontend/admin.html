@@ -5,44 +5,266 @@
     <title>Gestión Gladys Traveltur</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        .metricas-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
-        .metrica-card { flex: 1; min-width: 220px; background: linear-gradient(135deg, var(--azul), var(--celeste)); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .metrica-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px; }
-        .metrica-card .valor { font-size: 28px; font-weight: 900; margin-top: 8px; }
-        :root { --azul: #0d2c54; --celeste: #3182ce; --gris: #f7fafc; --borde: #e2e8f0; --rojo: #e53e3e; --verde: #2f855a; }
-        body { font-family: 'Inter', sans-serif; background: var(--gris); margin: 0; padding: 20px; }
-        .wrapper { max-width: 1100px; margin: auto; }
-        h1 { text-align: center; color: var(--azul); font-weight: 800; text-transform: uppercase; margin-bottom: 40px; }
-        .tabs { display: flex; gap: 10px; border-bottom: 2px solid var(--borde); margin-bottom: 40px; flex-wrap: wrap; }
-        .tab { padding: 15px 25px; cursor: pointer; font-weight: 700; background: none; border: none; color: #718096; text-transform: uppercase; font-size: 12px; border-bottom: 2px solid transparent; }
-        .tab.active { color: var(--celeste); border-bottom: 2px solid var(--celeste); }
-        .panel { background: white; padding: 45px; border-radius: 15px; border: 1px solid var(--borde); display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .panel.active { display: block; }
-        .f-row { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
-        .f-group { flex: 1; min-width: 150px; position: relative; }
-        label { display: block; font-weight: 700; font-size: 10px; color: #4a5568; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-        input, select, button { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--borde); font-size: 14px; box-sizing: border-box; }
-        .btn-blue { background: var(--celeste); color: white; border: none; font-weight: 800; cursor: pointer; padding: 18px; text-transform: uppercase; }
-        .btn-logout { background: var(--rojo); color: white; border: none; font-weight: 700; cursor: pointer; padding: 10px 16px; text-transform: uppercase; font-size: 11px; width: auto; border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th { text-align: left; padding: 16px; background: #f8fafc; font-size: 11px; border-bottom: 2px solid var(--borde); text-transform: uppercase; color: #718096; }
-        td { padding: 16px; border-bottom: 1px solid var(--borde); font-size: 14px; }
-        .btn-status { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 10px; width: auto; margin-bottom: 5px; margin-right: 5px; }
-        .agotado { background: #fed7d7; color: #9b2c2c; }
-        .disponible { background: #c6f6d5; color: #22543d; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        .badge-completo { background: #c6f6d5; color: #22543d; }
-        .badge-parcial { background: #feebc8; color: #7b341e; }
-        .badge-pendiente { background: #fed7d7; color: #9b2c2c; }
-        .badge-cancelada { background: #e2e8f0; color: #4a5568; text-decoration: line-through; }
-        #sug-box { position: absolute; width: 100%; background: white; border: 1px solid var(--borde); z-index: 100; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        .sug-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #f7fafc; }
-        .topbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
-        #login-screen { max-width: 380px; margin: 100px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        #login-screen h2 { color: var(--azul); }
-        #login-error { color: var(--rojo); font-size: 13px; margin-top: 10px; min-height: 18px; }
-        #app { display: none; }
-    </style>
+    :root {
+        --azul: #0d2c54;
+        --celeste: #3182ce;
+        --verde: #16a34a;
+        --fondo: #f7f8fa;
+        --borde: #eef0f3;
+        --rojo: #e53e3e;
+        --texto-sec: #6b7280;
+        --sombra: 0 16px 40px -18px rgba(13,44,84,0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--fondo);
+        margin: 0;
+        padding: 24px;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper { max-width: 1100px; margin: auto; }
+
+    h1 {
+        text-align: center;
+        color: var(--azul);
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        margin-bottom: 36px;
+    }
+
+    .topbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+
+    .tabs {
+        display: flex;
+        gap: 6px;
+        border-bottom: 1px solid var(--borde);
+        margin-bottom: 36px;
+        flex-wrap: wrap;
+    }
+    .tab {
+        padding: 13px 20px;
+        cursor: pointer;
+        font-weight: 700;
+        background: none;
+        border: none;
+        color: var(--texto-sec);
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        border-radius: 10px 10px 0 0;
+        border-bottom: 2px solid transparent;
+        transition: color .15s ease, background .15s ease;
+    }
+    .tab:hover { color: var(--celeste); background: rgba(49,130,206,0.06); }
+    .tab.active { color: var(--celeste); border-bottom: 2px solid var(--celeste); }
+
+    .panel {
+        background: white;
+        padding: 36px;
+        border-radius: 20px;
+        border: 1px solid var(--borde);
+        display: none;
+        box-shadow: var(--sombra);
+    }
+    .panel.active { display: block; }
+    .panel h2 { margin-top: 0; color: var(--azul); font-weight: 800; }
+
+    .f-row { display: flex; gap: 18px; margin-bottom: 26px; flex-wrap: wrap; }
+    .f-group { flex: 1; min-width: 160px; position: relative; }
+
+    label {
+        display: block;
+        font-weight: 700;
+        font-size: 10px;
+        color: var(--texto-sec);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        letter-spacing: 0.05em;
+    }
+
+    input, select, button {
+        width: 100%;
+        padding: 13px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--borde);
+        font-size: 14px;
+        font-family: inherit;
+        box-sizing: border-box;
+        background: #fbfbfc;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: var(--celeste);
+        box-shadow: 0 0 0 3px rgba(49,130,206,0.15);
+        background: white;
+    }
+
+    .btn-blue {
+        background: var(--azul);
+        color: white;
+        border: none;
+        font-weight: 800;
+        cursor: pointer;
+        padding: 16px;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        border-radius: 12px;
+        transition: background .15s ease, transform .15s ease;
+    }
+    .btn-blue:hover { background: var(--celeste); transform: translateY(-1px); }
+
+    .btn-logout {
+        background: white;
+        color: var(--rojo);
+        border: 1px solid #fecaca;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 9px 16px;
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        width: auto;
+        border-radius: 8px;
+        transition: background .15s ease;
+    }
+    .btn-logout:hover { background: #fef2f2; }
+
+    /* ---------- Tablas ---------- */
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 26px;
+        border: 1px solid var(--borde);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    th {
+        text-align: left;
+        padding: 14px 18px;
+        background: #fafbfc;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--borde);
+        text-transform: uppercase;
+        color: var(--texto-sec);
+        font-weight: 800;
+    }
+    td {
+        padding: 15px 18px;
+        border-bottom: 1px solid var(--borde);
+        font-size: 13.5px;
+        color: #1a202c;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background: #fafbfc; }
+    tbody tr:hover { background: #f3f6fb; }
+
+    .btn-status {
+        border: none;
+        padding: 8px 13px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 10px;
+        letter-spacing: 0.02em;
+        width: auto;
+        margin-bottom: 5px;
+        margin-right: 5px;
+        transition: opacity .15s ease;
+    }
+    .btn-status:hover { opacity: 0.85; }
+    .agotado { background: #fee2e2; color: #b91c1c; }
+    .disponible { background: #dcfce7; color: #15803d; }
+
+    .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        display: inline-block;
+    }
+    .badge-completo { background: #dcfce7; color: #15803d; }
+    .badge-parcial { background: #fef3c7; color: #92400e; }
+    .badge-pendiente { background: #fee2e2; color: #b91c1c; }
+    .badge-cancelada { background: #e5e7eb; color: #6b7280; text-decoration: line-through; }
+
+    #sug-box {
+        position: absolute;
+        width: 100%;
+        background: white;
+        border: 1px solid var(--borde);
+        border-radius: 12px;
+        z-index: 100;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        box-shadow: var(--sombra);
+        margin-top: 6px;
+    }
+    .sug-item {
+        padding: 12px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f7fafc;
+        font-size: 13px;
+        transition: background .1s ease;
+    }
+    .sug-item:hover { background: #f3f6fb; }
+    .sug-item:last-child { border-bottom: none; }
+
+    /* ---------- Login ---------- */
+    #login-screen {
+        max-width: 380px;
+        margin: 100px auto;
+        background: white;
+        padding: 44px;
+        border-radius: 20px;
+        box-shadow: var(--sombra);
+        text-align: center;
+        border: 1px solid var(--borde);
+    }
+    #login-screen h2 { color: var(--azul); margin-top: 0; }
+    #login-error { color: var(--rojo); font-size: 13px; margin-top: 12px; min-height: 18px; font-weight: 600; }
+    #app { display: none; }
+
+    /* ---------- Dashboard de métricas ---------- */
+    .metricas-grid { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 30px; }
+    .metrica-card {
+        flex: 1;
+        min-width: 220px;
+        padding: 26px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px -14px rgba(13,44,84,0.18);
+        border: 1px solid var(--borde);
+    }
+    .metrica-card:nth-child(1) { background: linear-gradient(135deg, #eaf2ff, #dbeafe); }
+    .metrica-card:nth-child(2) { background: linear-gradient(135deg, #eafaf0, #dcfce7); }
+    .metrica-card:nth-child(3) { background: linear-gradient(135deg, #f3ecff, #ede9fe); }
+    .metrica-card .label {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--azul);
+        opacity: 0.75;
+    }
+    .metrica-card .valor {
+        font-size: 30px;
+        font-weight: 900;
+        margin-top: 10px;
+        color: var(--azul);
+        letter-spacing: -0.02em;
+    }
+</style>
 </head>
 <body>
 
