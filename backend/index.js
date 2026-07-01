@@ -21,6 +21,9 @@ function validar(schema) {
 }
 
 // Schemas
+const schemaRegistrarPago = z.object({
+    monto: z.coerce.number().positive('El monto debe ser mayor a 0')
+});
 const schemaNuevoViaje = z.object({
     destino: z.string().trim().min(2, 'El destino es obligatorio'),
     precio: z.coerce.number().positive('El precio debe ser mayor a 0'),
@@ -333,7 +336,43 @@ app.put('/admin/reservas/:id/cancelar', requireAuth, async (req, res) => {
         res.json({ ok: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
+app.put('/admin/reservas/:id/pago', requireAuth, validar(schemaRegistrarPago), async (req, res) => {
+    try {
+        const { monto } = req.body;
 
+        const { data: reserva, error: errR } = await supabase
+            .from('reservas')
+            .select('monto_total, monto_pagado, estado')
+            .eq('id_reserva', req.params.id)
+            .single();
+        if (errR) throw errR;
+        if (reserva.estado === 'Cancelada') {
+            return res.status(400).json({ error: 'No se puede registrar un pago en una reserva cancelada' });
+        }
+
+        const total = parseFloat(reserva.monto_total) || 0;
+        const pagadoActual = parseFloat(reserva.monto_pagado) || 0;
+        const nuevoPagado = pagadoActual + monto;
+
+        if (nuevoPagado > total) {
+            const saldo = (total - pagadoActual).toFixed(2);
+            return res.status(400).json({ error: `El monto supera el saldo pendiente ($${saldo})` });
+        }
+
+        const estado_pago = nuevoPagado >= total ? 'Completo' : 'Parcial';
+
+        const { error } = await supabase
+            .from('reservas')
+            .update({ monto_pagado: nuevoPagado, estado_pago })
+            .eq('id_reserva', req.params.id);
+        if (error) throw error;
+
+        res.json({ ok: true, monto_pagado: nuevoPagado, estado_pago });
+    } catch (e) {
+        console.error('Error en /admin/reservas/:id/pago:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
 app.get('/admin/historial-reservas', async (req, res) => {
     try {
         const { data, error } = await supabase

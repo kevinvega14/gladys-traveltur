@@ -389,6 +389,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             tab(0);
+            actualizarRadarGlobal();
         } else {
             document.getElementById('login-screen').style.display = 'block';
             document.getElementById('app').style.display = 'none';
@@ -503,7 +504,7 @@
         };
         const res = await authFetch(`${API}/admin/nueva-reserva`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json();
-        if (res.ok) { alert("Reserva Guardada"); tab(3); } else alert('Error: ' + data.error);
+        if (res.ok) { alert("Reserva Guardada"); tab(3); actualizarRadarGlobal(); }
     }
 
     async function getC() {
@@ -561,6 +562,7 @@ function formatMonto(valor) {
         if(confirm("¿Cancelar esta reserva?")) {
             await authFetch(`${API}/admin/reservas/${id}/cancelar`, { method: 'PUT' });
             getH();
+            actualizarRadarGlobal();
         }
     }
 function renderHistorial(data) {
@@ -570,14 +572,46 @@ function renderHistorial(data) {
     } else {
         data.forEach(r => {
             const destinoNombre = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : 'N/D';
+            const tienesaldo = r.estado !== 'Cancelada' && Number(r.monto_pagado) < Number(r.monto_total);
+
+            const btnPago = tienesaldo
+                ? `<button class="btn-status disponible" onclick="registrarPago(${r.id_reserva}, ${r.monto_total}, ${r.monto_pagado})">💵 Registrar Pago</button>`
+                : '';
+            const btnCancelar = r.estado === 'Cancelada'
+                ? '-'
+                : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`;
+
             h += `<tr><td>${r.clientes ? r.clientes.apellido : 'N/D'}</td><td>${destinoNombre}</td><td>${formatMonto(r.monto_pagado)}</td><td>${formatMonto(r.monto_total)}</td>
             <td>${badgeEstadoPago(r.estado_pago, r.estado)}</td>
-            <td>${r.estado === 'Cancelada' ? '-' : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`}</td></tr>`;
+            <td>${btnPago}${btnCancelar}</td></tr>`;
         });
     }
     document.getElementById('tab-his').innerHTML = h+"</table>";
 }
+async function registrarPago(id, montoTotal, montoPagado) {
+    const saldoPendiente = Number(montoTotal) - Number(montoPagado);
+    const input = prompt(`Saldo pendiente: ${formatMonto(saldoPendiente)}\n¿Cuánto querés registrar?`);
+    if (input === null) return; // canceló el prompt
 
+    const monto = parseFloat(input.replace(',', '.'));
+    if (isNaN(monto) || monto <= 0) { alert('Ingresá un monto válido mayor a 0'); return; }
+    if (monto > saldoPendiente) { alert(`Ese monto supera el saldo pendiente (${formatMonto(saldoPendiente)})`); return; }
+
+    try {
+        const res = await authFetch(`${API}/admin/reservas/${id}/pago`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ monto })
+        });
+        const data = await res.json();
+        if (!res.ok) { alert('Error: ' + data.error); return; }
+
+        alert('Pago registrado correctamente');
+        getH(); // refresca la tabla con el nuevo estado
+    } catch (e) {
+        console.error('registrarPago falló:', e);
+    }
+}
 function filtrarReservas() {
     const texto = document.getElementById('buscar-cliente').value.trim().toLowerCase();
     if (!texto) { renderHistorial(todasLasReservas); return; }
@@ -634,7 +668,7 @@ function calcularBonificaciones(dataReservas) {
     const grupos = {};
 
     dataReservas.forEach(r => {
-        if (r.estado === 'Cancelada') return; // no cuenta para el bonus
+        if (r.estado === 'Cancelada') return;
 
         const destino = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : null;
         const empresa = r.salidas && r.salidas.empresas ? r.salidas.empresas.nombre : null;
@@ -646,31 +680,43 @@ function calcularBonificaciones(dataReservas) {
     });
 
     return Object.values(grupos)
-        .map(g => ({
-            ...g,
-            bonusGanado: g.vendidos >= META_BONUS,
-            faltan: Math.max(0, META_BONUS - g.vendidos)
-        }))
+        .map(g => {
+            const bonosGanados = Math.floor(g.vendidos / META_BONUS);
+            const resto = g.vendidos % META_BONUS;
+            const faltanProximo = resto === 0 ? META_BONUS : META_BONUS - resto;
+            const proximaMeta = (bonosGanados + 1) * META_BONUS;
+            return { ...g, bonosGanados, faltanProximo, proximaMeta };
+        })
         .sort((a, b) => b.vendidos - a.vendidos);
 }
 
 function renderTablaVentas(bonificaciones) {
-    const radarHtml = renderRadarBonos(calcularRadarBonos(bonificaciones));
+    const alertas = calcularRadarBonos(bonificaciones);
+    pintarPuntoTab(alertas.length > 0);
+    const radarHtml = renderAlertasRadar(alertas);
 
-    let h = radarHtml + `<table><tr><th>Destino</th><th>Empresa</th><th>PAX Vendidos</th><th>Bonificación</th></tr>`;
+    let h = radarHtml + `<table><tr><th>Destino</th><th>Empresa</th><th>Pasajeros Vendidos</th><th>Bonificación</th></tr>`;
     if (bonificaciones.length === 0) {
         h += `<tr><td colspan="4" style="text-align:center;color:#a0aec0;">Todavía no hay ventas registradas.</td></tr>`;
     } else {
         bonificaciones.forEach(g => {
-            const celdaBonus = g.bonusGanado
-                ? `<span class="badge badge-bonus">🎉 ¡BONUS GANADO!</span>`
-                : `<span class="texto-faltan">Faltan ${g.faltan} para el Bonus</span>`;
-            h += `<tr><td>${g.destino}</td><td>${g.empresa}</td><td>${g.vendidos} PAX</td><td>${celdaBonus}</td></tr>`;
+            const celdaBonus = g.bonosGanados > 0
+                ? `<span class="badge badge-bonus">🎉 ${g.bonosGanados} BONO${g.bonosGanados > 1 ? 'S' : ''} GANADO${g.bonosGanados > 1 ? 'S' : ''}</span><br><span class="texto-faltan">Faltan ${g.faltanProximo} para el próximo (meta: ${g.proximaMeta})</span>`
+                : `<span class="texto-faltan">Faltan ${g.faltanProximo} para el Bono</span>`;
+            h += `<tr><td>${g.destino}</td><td>${g.empresa}</td><td>${g.vendidos} Pasajeros</td><td>${celdaBonus}</td></tr>`;
         });
     }
     document.getElementById('tab-ran').innerHTML = h + "</table>";
 }
-
+async function actualizarRadarGlobal() {
+    try {
+        const res = await fetch(`${API}/admin/historial-reservas`);
+        const data = await res.json();
+        const bonificaciones = calcularBonificaciones(data);
+        const alertas = calcularRadarBonos(bonificaciones);
+        pintarPuntoTab(alertas.length > 0);
+    } catch (e) { console.error('No se pudo actualizar el radar global', e); }
+}
 async function getR() {
     const res = await fetch(`${API}/admin/historial-reservas`);
     const dataHistorial = await res.json();
@@ -686,7 +732,23 @@ async function getR() {
 }
 
 function calcularRadarBonos(bonificaciones) {
-    return bonificaciones.filter(g => !g.bonusGanado && g.faltan <= 2);
+    return bonificaciones.filter(g => g.faltanProximo <= 2);
+}
+function pintarPuntoTab(hayAlertas) {
+    const tabBtn = document.querySelectorAll('.tab')[4];
+    if (!tabBtn) return;
+    const dotViejo = tabBtn.querySelector('.tab-dot');
+    if (dotViejo) dotViejo.remove();
+    if (hayAlertas) tabBtn.insertAdjacentHTML('beforeend', '<span class="tab-dot"></span>');
+}
+function renderAlertasRadar(alertas) {
+    if (alertas.length === 0) return '';
+    return alertas.map(a => `
+        <div class="radar-alerta">
+            <span class="pulso"></span>
+            <span>🎯 <strong>${a.empresa} – ${a.destino}</strong> está a <strong>${a.faltanProximo} pasajero${a.faltanProximo === 1 ? '' : 's'}</strong> de un nuevo bono (lleva ${a.vendidos} vendidos, próxima meta: ${a.proximaMeta}). ¡Empujalo!</span>
+        </div>
+    `).join('');
 }
 
 function renderRadarBonos(alertas) {
