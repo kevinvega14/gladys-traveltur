@@ -2,11 +2,14 @@ const express = require('express');
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 const cors = require('cors');
+const logger = require('./logger');
+const requestLogger = require('./request-logger');
 require('dotenv').config();
+
 
 const app = express();
 const { z } = require('zod');
-
+app.use(requestLogger); // loguea CADA request: método, ruta, status, tiempo de respuesta
 // Middleware genérico: valida req.body contra un schema de Zod
 function validar(schema) {
     return (req, res, next) => {
@@ -63,7 +66,7 @@ app.use(cors({
         if (!origin || ORIGENES_PERMITIDOS.includes(origin)) {
             callback(null, true);
         } else {
-            console.warn('⛔ Origen bloqueado por CORS:', origin);
+            logger.warn(`Origen bloqueado por CORS: ${origin}`);
             callback(new Error('No autorizado por CORS'));
         }
     }
@@ -72,7 +75,7 @@ app.use(cors({
 app.use(express.json());
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
-    console.error('❌ Faltan SUPABASE_URL / SUPABASE_KEY en el archivo .env');
+    logger.error('Faltan SUPABASE_URL / SUPABASE_KEY en el archivo .env');
     process.exit(1);
 }
 
@@ -227,7 +230,7 @@ app.post('/admin/nuevo-viaje', requireAuth, validar(schemaNuevoViaje), async (re
 
         res.json({ ok: true });
     } catch (e) {
-        console.error('Error en /admin/nuevo-viaje:', e);
+        logger.error(`Error en /admin/nuevo-viaje: ${e.message}`, { stack: e.stack });
         res.status(500).json({ error: e.message });
     }
 });
@@ -265,7 +268,7 @@ app.post('/admin/nuevo-cliente', requireAuth, validar(schemaNuevoCliente), async
         if (error) throw error;
         res.json({ ok: true });
     } catch (e) {
-        console.error('Error en /admin/nuevo-cliente:', e);
+        logger.error(`Error en /admin/nuevo-cliente: ${e.message}`, { stack: e.stack });
         res.status(500).json({ error: e.message });
     }
 });
@@ -312,7 +315,7 @@ app.post('/admin/nueva-reserva', requireAuth, validar(schemaNuevaReserva), async
 
         res.json({ ok: true });
     } catch (e) {
-        console.error('Error en /admin/nueva-reserva:', e);
+        logger.error(`Error en /admin/nueva-reserva: ${e.message}`, { stack: e.stack });
         res.status(500).json({ error: e.message });
     }
 });
@@ -424,11 +427,11 @@ const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GE
 
 app.post('/api/chat', async (req, res) => {
     const { message, history } = req.body;
-    console.log("📩 Mensaje recibido en el backend:", message);
+    logger.info(`Mensaje recibido en el chat: "${message}"`);
 
     try {
         if (!ai) {
-            console.error("❌ GEMINI_API_KEY no está configurada en .env");
+            logger.error('GEMINI_API_KEY no está configurada en .env');
             return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en el servidor' });
         }
         if (!message || !message.trim()) {
@@ -470,11 +473,11 @@ Reglas: respondé en español rioplatense, tono cálido y profesional, máximo 3
             new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT_GEMINI')), 15000))
         ]);
 
-        console.log("✅ Respuesta generada correctamente");
+        logger.info('Respuesta del asistente generada correctamente');
         res.json({ reply: respuesta.text });
 
     } catch (e) {
-        console.error('❌ Error en /api/chat:', e.message);
+        logger.error(`Error en /api/chat: ${e.message}`, { stack: e.stack });
         if (e.message === 'TIMEOUT_GEMINI') {
             return res.status(504).json({ error: 'El asistente tardó demasiado en responder. Probá de nuevo.' });
         }
@@ -483,7 +486,7 @@ Reglas: respondé en español rioplatense, tono cálido y profesional, máximo 3
 });
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-    app.listen(PORT, () => console.log(`🚀 Servidor Gladys OK en puerto ${PORT}`));
+    app.listen(PORT, () => logger.info(`Servidor Gladys corriendo en puerto ${PORT}`));
 }
 
 module.exports = { app, capitalizar };
