@@ -311,12 +311,7 @@
 
 /* Tarjetas con etiqueta superpuesta tipo TurismoCity */
 .card-img-wrap { position: relative; }
-.card-tag {
-    white-space: normal;
-    max-width: 78%;
-    line-height: 1.3;
-    font-size: 9.5px;
-}
+
 .card-promo-badge {
     position: absolute;
     top: 12px; right: 12px;
@@ -339,7 +334,21 @@
     .categorias-bar { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
     .cat-btn { flex-shrink: 0; }
 }
-.card-tag { white-space: normal; max-width: 78%; line-height: 1.3; font-size: 9.5px; }
+.card-tag {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(13,44,84,0.88);
+    color: white;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    padding: 8px 14px;
+    border-radius: 20px;
+    max-width: 85%;
+    line-height: 1.3;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
 .card-promo-badge {
     position: absolute; top: 12px; right: 12px;
     background: linear-gradient(135deg, #f97316, #dc2626);
@@ -402,7 +411,7 @@
 <div class="container" id="resultados"></div>
 
     <script>
-        const API = 'http://localhost:4000';
+        const API = "https://gladys-traveltur.onrender.com";
         const FOTO_DEFAULT = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop&q=80"; // mapa/valija/paisaje genérico de viajes
 
 
@@ -509,7 +518,7 @@ function dibujar(lista, id) {
         <div class="card">
             <div class="card-img-wrap">
                 <img src="${imagenDe(v)}" class="card-img" onerror="this.onerror=null;this.src='${FOTO_DEFAULT}'">
-                <span class="card-tag">${etiquetaFecha(v)}</span>
+                <span class="card-tag">📅 ${etiquetaFecha(v)}</span>
                 ${v.promo ? `<span class="card-promo-badge">🚨 ${v.promo}</span>` : ''}
             </div>
             <div class="card-body">
