@@ -1,0 +1,86 @@
+Las 5 ideas
+1. 🎯 Radar de "casi-bonus" (Estrella)
+Ya tenés la lógica de 12 PAX = bonus y el contador vendidos por salida. Lo que falta es avisar proactivamente cuando una combinación empresa+destino está a 1 o 2 pasajeros de liberar el bonus, para que la dueña sepa a qué salida empujarle unas últimas ventas o promos. Es la diferencia entre un dashboard pasivo (que hay que ir a mirar) y uno que te busca a vos. Barato de hacer porque reutiliza datos que ya estás trayendo.
+2. ✅ Validación estricta con Zod antes de tocar Supabase (Senior)
+Hoy tus endpoints confían en que el frontend mande bien los datos. Un evaluador técnico mira esto rápido: mandale un POST /admin/nuevo-cliente con dni: 123 (number en vez de string) o sin apellido, y ver si el servidor devuelve un error prolijo o un 500 con stacktrace de Supabase. Zod (o Joi) es la respuesta "de producción" a eso, y además te documenta el contrato de cada endpoint como código.
+3. 📄 Reporte PDF semanal automático para la dueña (Estrella)
+Un endpoint GET /admin/reporte-semanal que arme un PDF con pdfkit (ventas totales, top destinos, bonos ganados/pendientes de la semana) y lo pueda descargar desde el panel con un botón, o mejor — programado con node-cron para mandarlo por mail los lunes a la mañana. Esto es lo que un dueño de agencia de verdad usaría todas las semanas; le habla directo al "valor comercial real" que pide el challenge.
+4. 🪵 Logger profesional con Winston + niveles (Senior)
+Reemplazar los console.log/console.error sueltos por un logger con niveles (info, warn, error), que escriba a archivo rotado (winston-daily-rotate-file) además de consola. Sumale un middleware tipo morgan para loguear cada request (método, ruta, status, tiempo de respuesta). Es chico de implementar y es de las primeras cosas que un ingeniero senior nota en un repo ajeno.
+5. 🔔 Sistema de toasts en vez de alert() (UX)
+Ahora mismo el admin usa alert() del navegador para todo (feo, bloqueante, no se puede estilizar). Un sistema de notificaciones tipo toast (aparecen abajo a la derecha, se autodestruyen a los 3s, colores según éxito/error) es rápido de armar, reemplaza ~8 líneas de alert() existentes, y sube muchísimo la percepción de pulido del panel completo.
+
+Código: las 2 más rápidas — Radar de Bonos + Validación con Zod
+🎯 1. Radar de Bonos (solo frontend, reutiliza datos ya cargados)
+En admin.html, agregá este CSS al <style>:
+css.radar-alerta {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 1px solid #fed7aa;
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: #9a3412;
+}
+.radar-alerta strong { font-weight: 800; }
+.radar-alerta .pulso {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #f97316; flex-shrink: 0;
+    animation: pulso-anim 1.4s infinite;
+}
+@keyframes pulso-anim {
+    0% { box-shadow: 0 0 0 0 rgba(249,115,22,0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(249,115,22,0); }
+    100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
+}
+.tab-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: #f97316; margin-left: 5px; animation: pulso-anim 1.4s infinite;
+}
+Y en el JS, agregá esta función y modificá renderTablaVentas / getR():
+javascriptfunction calcularRadarBonos(bonificaciones) {
+    // Grupos a 1 o 2 PAX de distancia del bonus (y que todavía no lo ganaron)
+    return bonificaciones.filter(g => !g.bonusGanado && g.faltan <= 2);
+}
+
+function renderRadarBonos(alertas) {
+    const cont = document.getElementById('tab-ran');
+    const tabBtn = document.querySelectorAll('.tab')[4];
+
+    // quitamos punto viejo si había
+    const dotViejo = tabBtn.querySelector('.tab-dot');
+    if (dotViejo) dotViejo.remove();
+
+    if (alertas.length === 0) return '';
+
+    tabBtn.insertAdjacentHTML('beforeend', '<span class="tab-dot"></span>');
+
+    return alertas.map(a => `
+        <div class="radar-alerta">
+            <span class="pulso"></span>
+            <span>🎯 <strong>${a.empresa} – ${a.destino}</strong> está a <strong>${a.faltan} PAX</strong> del bonus (lleva ${a.vendidos}/12). ¡Empujalo!</span>
+        </div>
+    `).join('');
+}
+
+// Reemplazá renderTablaVentas para que inserte el radar arriba de la tabla
+function renderTablaVentas(bonificaciones) {
+    const radarHtml = renderRadarBonos(calcularRadarBonos(bonificaciones));
+
+    let h = radarHtml + `<table><tr><th>Destino</th><th>Empresa</th><th>PAX Vendidos</th><th>Bonificación</th></tr>`;
+    if (bonificaciones.length === 0) {
+        h += `<tr><td colspan="4" style="text-align:center;color:#a0aec0;">Todavía no hay ventas registradas.</td></tr>`;
+    } else {
+        bonificaciones.forEach(g => {
+            const celdaBonus = g.bonusGanado
+                ? `<span class="badge badge-bonus">🎉 ¡BONUS GANADO!</span>`
+                : `<span class="texto-faltan">Faltan ${g.faltan} para el Bonus</span>`;
+            h += `<tr><td>${g.destino}</td><td>${g.empresa}</td><td>${g.vendidos} PAX</td><td>${celdaBonus}</td></tr>`;
+        });
+    }
+    document.getElementById('tab-ran').innerHTML = h + "</table>";
+}
+Con esto, apenas una salida queda a 1-2 pasajeros del bonus, le aparece un puntito naranja pulsando en la pestaña "Control de Ventas" (aunque estés en otra pestaña) y una alerta bien visible arriba de la tabla. Cero cambios de backend.

@@ -291,7 +291,7 @@
     <h2 class="section-title">🚌 Salidas en Micro</h2><div class="container" id="mic"></div>
 
     <script>
-        const API = 'http://localhost:3000';
+        const API = 'http://localhost:4000';
         const FOTO_DEFAULT = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600";
         const fotos = { "bariloche": "Fondos/bariloche.jpg", "brasil": "Fondos/brasil.jpg", "carlos paz": "Fondos/carlospaz.jpg", "cataratas del iguazú": "Fondos/cataratas.jpg", "jujuy": "Fondos/jujuy.jpg", "mendoza": "Fondos/mendoza.jpg", "default": FOTO_DEFAULT };
 
@@ -400,7 +400,7 @@
         typing.classList.add('visible');
 
         try {
-            const res = await fetch('http://localhost:3000/api/chat', {
+            const res = await fetch('http://localhost:4000/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: texto, history: historialPrevio })
