@@ -277,7 +277,54 @@
 .dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
 
+.categorias-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto 16px;
+    padding: 0 24px;
+}
+.cat-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    padding: 14px 20px;
+    cursor: pointer;
+    min-width: 90px;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    box-shadow: 0 2px 8px rgba(13,44,84,0.05);
+}
+.cat-btn:hover { transform: translateY(-3px); box-shadow: var(--sombra); }
+.cat-btn.active { background: var(--azul); border-color: var(--azul); }
+.cat-btn.active .cat-label { color: white; }
+.cat-icon { font-size: 22px; line-height: 1; }
+.cat-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--texto-sec); }
 
+/* Tarjetas con etiqueta superpuesta tipo TurismoCity */
+.card-img-wrap { position: relative; }
+.card-tag {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(13,44,84,0.88);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+@media (max-width: 480px) {
+    .categorias-bar { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+    .cat-btn { flex-shrink: 0; }
+}
 
 </style>
 </head>
@@ -290,8 +337,16 @@
         <div class="campo">Ordenar <select id="orden" onchange="filtrar()"><option value="prox">Próximos</option><option value="p-menor">Menor Precio</option></select></div>
         <button class="btn-bus" onclick="filtrar()">BUSCAR</button>
     </div>
-    <h2 class="section-title">✈️ Paquetes Aéreos</h2><div class="container" id="aer"></div>
-    <h2 class="section-title">🚌 Salidas en Micro</h2><div class="container" id="mic"></div>
+    <div class="categorias-bar" id="categorias-bar">
+    <button class="cat-btn active" data-cat="todos"><span class="cat-icon">🌎</span><span class="cat-label">Todos</span></button>
+    <button class="cat-btn" data-cat="micro"><span class="cat-icon">🚌</span><span class="cat-label">Micros</span></button>
+    <button class="cat-btn" data-cat="vuelo"><span class="cat-icon">✈️</span><span class="cat-label">Vuelos</span></button>
+    <button class="cat-btn" data-cat="escapada"><span class="cat-icon">🏔️</span><span class="cat-label">Escapadas</span></button>
+    <button class="cat-btn" data-cat="playa"><span class="cat-icon">🏖️</span><span class="cat-label">Playa</span></button>
+</div>
+
+<h2 class="section-title" id="resultados-title">Todas las ofertas</h2>
+<div class="container" id="resultados"></div>
 
     <script>
         const API = 'http://localhost:4000';
@@ -310,41 +365,107 @@
             } catch (e) { console.error(e); }
         }
 
-        function filtrar() {
-            const txt = norm(document.getElementById('bus-txt').value);
-            const ord = document.getElementById('orden').value;
-            const desde = document.getElementById('f-desde').value;
-            const hasta = document.getElementById('f-hasta').value;
+        const MESES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 
-            let list = cache.filter(v => norm(v.destinos.nombre).includes(txt));
-            if (desde) list = list.filter(v => v.fecha_salida >= desde);
-            if (hasta) list = list.filter(v => v.fecha_salida <= hasta);
-            if(ord === "p-menor") list.sort((a,b) => a.precio_total - b.precio_total);
-            if(ord === "prox") list.sort((a,b) => new Date(a.fecha_salida) - new Date(b.fecha_salida));
+// Etiqueta dinámica de la tarjeta: "3 NOCHES · AGO" si hay fecha_regreso real, o "SALIDA AGO" si no
+function etiquetaFecha(v) {
+    const salida = new Date(v.fecha_salida + 'T00:00:00');
+    const mes = MESES[salida.getMonth()];
+    if (v.fecha_regreso && v.fecha_regreso !== v.fecha_salida) {
+        const regreso = new Date(v.fecha_regreso + 'T00:00:00');
+        const noches = Math.round((regreso - salida) / (1000 * 60 * 60 * 24));
+        if (noches > 0) return `${noches} NOCHE${noches > 1 ? 'S' : ''} · ${mes}`;
+    }
+    return `SALIDA ${mes}`;
+}
 
-            dibujar(list.filter(v => norm(v.tipo_viaje).includes('aer')), 'aer');
-            dibujar(list.filter(v => !norm(v.tipo_viaje).includes('aer')), 'mic');
-        }
+// Lista de mantenimiento manual — sumá acá los destinos de playa que vayas cargando
+// y que no se estén detectando (mientras no exista un campo real de categoría en Supabase)
+const DESTINOS_PLAYA = [
+    'mar del plata', 'pinamar', 'villa gesell', 'necochea', 'miramar',
+    'brasil', 'florianopolis', 'camboriu', 'punta cana', 'cancun',
+    'rio de janeiro', 'buzios', 'maragogi'
+];
+
+const LABELS_CATEGORIA = {
+    todos: 'Todas las ofertas',
+    micro: '🚌 Salidas en Micro',
+    vuelo: '✈️ Paquetes Aéreos',
+    escapada: '🏔️ Escapadas cortas',
+    playa: '🏖️ Destinos de Playa'
+};
+
+// Deduce a qué categorías pertenece un viaje (puede pertenecer a más de una)
+function categoriasDe(v) {
+    const cats = [];
+    const tipo = norm(v.tipo_viaje);
+    if (tipo.includes('micro')) cats.push('micro');
+    if (tipo.includes('aer')) cats.push('vuelo');
+
+    const destino = norm(v.destinos.nombre);
+    if (DESTINOS_PLAYA.some(k => destino.includes(k))) cats.push('playa');
+
+    if (v.fecha_regreso && v.fecha_regreso !== v.fecha_salida) {
+        const noches = Math.round((new Date(v.fecha_regreso) - new Date(v.fecha_salida)) / (1000 * 60 * 60 * 24));
+        if (noches > 0 && noches <= 3) cats.push('escapada');
+    }
+    // 'hotel' queda sin implementar: no hay dato real que lo respalde hoy (ver nota en el chat)
+    return cats;
+}
+
+let categoriaActiva = 'todos';
+
+document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        categoriaActiva = btn.dataset.cat;
+        document.getElementById('resultados-title').innerText = LABELS_CATEGORIA[categoriaActiva];
+        filtrar();
+    });
+});
+
+function filtrar() {
+    const txt = norm(document.getElementById('bus-txt').value);
+    const ord = document.getElementById('orden').value;
+    const desde = document.getElementById('f-desde').value;
+    const hasta = document.getElementById('f-hasta').value;
+
+    let list = cache.filter(v => norm(v.destinos.nombre).includes(txt));
+    if (desde) list = list.filter(v => v.fecha_salida >= desde);
+    if (hasta) list = list.filter(v => v.fecha_salida <= hasta);
+    if (categoriaActiva !== 'todos') {
+        list = list.filter(v => categoriasDe(v).includes(categoriaActiva));
+    }
+    if (ord === "p-menor") list.sort((a, b) => a.precio_total - b.precio_total);
+    if (ord === "prox") list.sort((a, b) => new Date(a.fecha_salida) - new Date(b.fecha_salida));
+
+    dibujar(list, 'resultados');
+}
+
+function dibujar(lista, id) {
+    const cont = document.getElementById(id);
+    cont.innerHTML = lista.length === 0 ? "<p class='empty'>No hay ofertas por el momento.</p>" : lista.map(v => `
+        <div class="card">
+            <div class="card-img-wrap">
+                <img src="${imagenDe(v)}" class="card-img" onerror="this.onerror=null;this.src='${FOTO_DEFAULT}'">
+                <span class="card-tag">${etiquetaFecha(v)}</span>
+            </div>
+            <div class="card-body">
+                <h3>${v.destinos.nombre}</h3>
+                <div class="empresa">${v.empresas ? v.empresas.nombre : ''}</div>
+                <div class="price">${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}</div>
+                <a href="https://wa.me/5491135592160?text=${encodeURIComponent('Hola Gladys! Consulto por ' + v.destinos.nombre)}" class="btn-wa" target="_blank">Consultar</a>
+            </div>
+        </div>`).join('');
+}
 
         function imagenDe(v) {
             if (v.destinos.imagen_url) return v.destinos.imagen_url;
             return fotos[norm(v.destinos.nombre)] || FOTO_DEFAULT;
         }
 
-        function dibujar(lista, id) {
-            const cont = document.getElementById(id);
-            cont.innerHTML = lista.length === 0 ? "<p class='empty'>No hay ofertas por el momento.</p>" : lista.map(v => `
-                <div class="card">
-                    <img src="${imagenDe(v)}" class="card-img" onerror="this.onerror=null;this.src='${FOTO_DEFAULT}'">
-                    <div class="card-body">
-                        <small style="color:var(--celeste);font-weight:800">SALIDA: ${v.fecha_salida.split('-').reverse().join('/')}</small>
-                        <h3>${v.destinos.nombre}</h3>
-                        <div class="empresa">${v.empresas ? v.empresas.nombre : ''}</div>
-                        <div class="price">${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}</div>
-                        <a href="https://wa.me/5491135592160?text=${encodeURIComponent('Hola Gladys! Consulto por ' + v.destinos.nombre)}" class="btn-wa" target="_blank">CONSULTAR</a>
-                    </div>
-                </div>`).join('');
-        }
+        
         window.onload = cargar;
 
 
