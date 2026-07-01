@@ -5,6 +5,10 @@
     <title>Gestión Gladys Traveltur</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+        .metricas-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+        .metrica-card { flex: 1; min-width: 220px; background: linear-gradient(135deg, var(--azul), var(--celeste)); color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .metrica-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px; }
+        .metrica-card .valor { font-size: 28px; font-weight: 900; margin-top: 8px; }
         :root { --azul: #0d2c54; --celeste: #3182ce; --gris: #f7fafc; --borde: #e2e8f0; --rojo: #e53e3e; --verde: #2f855a; }
         body { font-family: 'Inter', sans-serif; background: var(--gris); margin: 0; padding: 20px; }
         .wrapper { max-width: 1100px; margin: auto; }
@@ -98,14 +102,25 @@
         <button class="btn-blue" onclick="saveR()">CONFIRMAR VENTA</button>
     </div>
 
-    <div class="panel" id="p3"><h2>Reservas Realizadas</h2><div id="tab-his"></div></div>
-    <div class="panel" id="p4"><h2>Control de Ventas</h2><div id="tab-ran"></div></div>
+    <div class="panel" id="p3">
+    <h2>Reservas Realizadas</h2>
+    <div class="f-group" style="max-width:350px; margin-bottom:20px;">
+        <input type="text" id="buscar-cliente" placeholder="🔍 Buscar por apellido de cliente...">
+    </div>
+    <div id="tab-his"></div>
+</div>
+    <div class="panel" id="p4">
+    <h2>Control de Ventas</h2>
+    <div class="metricas-grid" id="metricas-grid"></div>
+    <div id="tab-ran"></div>
+</div>
 </div>
 </div>
 
 <script>
     const API = "http://localhost:3000";
     let cliCache = [], viaCache = [];
+    let todasLasReservas = [];
 
     // -------------------- AUTH --------------------
     function getToken() { return sessionStorage.getItem('admin_token'); }
@@ -277,17 +292,11 @@ function formatMonto(valor) {
     }
 
     async function getH() {
-    const res = await fetch(`${API}/admin/historial-reservas`);
-    const data = await res.json();
-    let h = `<table><tr><th>Cliente</th><th>Destino</th><th>Pagado</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>`;
-    data.forEach(r => {
-        const destinoNombre = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : 'N/D';
-        h += `<tr><td>${r.clientes ? r.clientes.apellido : 'N/D'}</td><td>${destinoNombre}</td><td>${formatMonto(r.monto_pagado)}</td><td>${formatMonto(r.monto_total)}</td>
-        <td>${badgeEstadoPago(r.estado_pago, r.estado)}</td>
-        <td>${r.estado === 'Cancelada' ? '-' : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`}</td></tr>`;
-    });
-    document.getElementById('tab-his').innerHTML = h+"</table>";
-}
+        const res = await fetch(`${API}/admin/historial-reservas`);
+        todasLasReservas = await res.json();
+        document.getElementById('buscar-cliente').value = '';
+        renderHistorial(todasLasReservas);
+    }
 
     async function cancelarR(id) {
         if(confirm("¿Cancelar esta reserva?")) {
@@ -295,17 +304,93 @@ function formatMonto(valor) {
             getH();
         }
     }
-
-    async function getR() {
-        const res = await fetch(`${API}/admin/ranking-ventas`);
-        const data = await res.json();
-        let h = `<table><tr><th>Destino</th><th>Empresa</th><th>Vendidos</th><th>Bonificación</th></tr>`;
-        data.forEach(v => h+=`<tr><td>${v.destino}</td><td>${v.empresa}</td><td>${v.vendidos} PAX</td><td>${v.gratis} GRATIS (faltan ${v.falta})</td></tr>`);
-        document.getElementById('tab-ran').innerHTML = h+"</table>";
+function renderHistorial(data) {
+    let h = `<table><tr><th>Cliente</th><th>Destino</th><th>Pagado</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>`;
+    if (data.length === 0) {
+        h += `<tr><td colspan="6" style="text-align:center;color:#a0aec0;">No se encontraron reservas.</td></tr>`;
+    } else {
+        data.forEach(r => {
+            const destinoNombre = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : 'N/D';
+            h += `<tr><td>${r.clientes ? r.clientes.apellido : 'N/D'}</td><td>${destinoNombre}</td><td>${formatMonto(r.monto_pagado)}</td><td>${formatMonto(r.monto_total)}</td>
+            <td>${badgeEstadoPago(r.estado_pago, r.estado)}</td>
+            <td>${r.estado === 'Cancelada' ? '-' : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`}</td></tr>`;
+        });
     }
+    document.getElementById('tab-his').innerHTML = h+"</table>";
+}
+
+function filtrarReservas() {
+    const texto = document.getElementById('buscar-cliente').value.trim().toLowerCase();
+    if (!texto) { renderHistorial(todasLasReservas); return; }
+
+    const filtradas = todasLasReservas.filter(r =>
+        r.clientes && r.clientes.apellido && r.clientes.apellido.toLowerCase().includes(texto)
+    );
+    renderHistorial(filtradas);
+}
+
+function calcularMetricas(dataReservas) {
+    let totalRecaudado = 0;
+    let reservasActivas = 0;
+    const conteoDestinos = {};
+
+    dataReservas.forEach(r => {
+        const activa = r.estado !== 'Cancelada';
+        if (!activa) return;
+
+        totalRecaudado += Number(r.monto_pagado) || 0;
+        reservasActivas++;
+
+        const destino = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : null;
+        if (destino) conteoDestinos[destino] = (conteoDestinos[destino] || 0) + 1;
+    });
+
+    let destinoEstrella = '—';
+    let maxCount = 0;
+    for (const [destino, count] of Object.entries(conteoDestinos)) {
+        if (count > maxCount) { maxCount = count; destinoEstrella = destino; }
+    }
+
+    return { totalRecaudado, reservasActivas, destinoEstrella };
+}
+
+function renderMetricas({ totalRecaudado, reservasActivas, destinoEstrella }) {
+    document.getElementById('metricas-grid').innerHTML = `
+        <div class="metrica-card">
+            <div class="label">💰 Total Recaudado</div>
+            <div class="valor">${formatMonto(totalRecaudado)}</div>
+        </div>
+        <div class="metrica-card">
+            <div class="label">📋 Reservas Activas</div>
+            <div class="valor">${reservasActivas}</div>
+        </div>
+        <div class="metrica-card">
+            <div class="label">⭐ Destino Estrella</div>
+            <div class="valor">${destinoEstrella}</div>
+        </div>
+    `;
+}
+
+async function getR() {
+    const [resRanking, resHistorial] = await Promise.all([
+        fetch(`${API}/admin/ranking-ventas`),
+        fetch(`${API}/admin/historial-reservas`)
+    ]);
+    const dataRanking = await resRanking.json();
+    const dataHistorial = await resHistorial.json();
+
+    renderMetricas(calcularMetricas(dataHistorial));
+
+    let h = `<table><tr><th>Destino</th><th>Empresa</th><th>Vendidos</th><th>Bonificación</th></tr>`;
+    dataRanking.forEach(v => h+=`<tr><td>${v.destino}</td><td>${v.empresa}</td><td>${v.vendidos} PAX</td><td>${v.gratis} GRATIS (faltan ${v.falta})</td></tr>`);
+    document.getElementById('tab-ran').innerHTML = h+"</table>";
+}
 
     document.getElementById('login-pass').addEventListener('keyup', e => { if(e.key === 'Enter') login(); });
     window.onload = checkAuth;
+    if (document.getElementById('buscar-cliente')) {
+    document.getElementById('buscar-cliente').addEventListener('input', filtrarReservas);
+}
 </script>
 </body>
 </html>
