@@ -30,6 +30,11 @@
     color: #92400e;
     font-size: 11px;
 }
+.badge-promo {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #b91c1c;
+    font-size: 11px;
+}
 .texto-faltan {
     font-size: 12.5px;
     color: var(--texto-sec);
@@ -376,6 +381,15 @@
             <div class="f-group"><label>Fecha Regreso</label><input type="date" id="v-fec-vuelta"></div>
         </div>
         <div class="f-group" style="margin-bottom:30px;"><label>Imagen (URL, opcional)</label><input type="text" id="v-img" placeholder="https://..."></div>
+        <div class="f-group" style="margin-bottom:30px;">
+    <label>Promoción (opcional)</label>
+    <select id="v-promo">
+        <option value="">Sin promoción</option>
+        <option value="2x1">2x1</option>
+        <option value="3x2">3x2</option>
+        <option value="4x3">4x3</option>
+    </select>
+</div>
         <button class="btn-blue" onclick="saveV()">PUBLICAR EN WEB</button>
         <div id="tab-viajes-admin"></div>
     </div>
@@ -396,6 +410,16 @@
             <div class="f-group"><label>Pax</label><input type="number" id="r-can" value="1" onchange="updPrice()"></div>
             <div class="f-group"><label>Total</label><input type="number" id="r-tot"></div>
             <div class="f-group"><label>Seña / Pagado</label><input type="number" id="r-pag" value="0"></div>
+        
+        <div class="f-group">
+            <label>Promoción aplicada</label>
+            <select id="r-promo">
+                <option value="">Sin promoción</option>
+                <option value="2x1">2x1</option>
+                <option value="3x2">3x2</option>
+                <option value="4x3">4x3</option>
+            </select>
+        </div>
         </div>
         <button class="btn-blue" onclick="saveR()">CONFIRMAR VENTA</button>
     </div>
@@ -488,7 +512,8 @@
         precio: document.getElementById('v-pre').value,
         fecha: document.getElementById('v-fec').value,
         fecha_regreso: document.getElementById('v-fec-vuelta').value,
-        imagen_url: document.getElementById('v-img').value
+        imagen_url: document.getElementById('v-img').value,
+        promo: document.getElementById('v-promo').value
     };
     if (!body.destino || !body.precio || !body.fecha) { showToast('Completá destino, monto y fecha de salida', 'error'); return; }
 
@@ -546,7 +571,8 @@
         id_salida: document.getElementById('r-via').value,
         cantidad_pasajeros: document.getElementById('r-can').value,
         monto_total: document.getElementById('r-tot').value,
-        monto_pagado: document.getElementById('r-pag').value
+        monto_pagado: document.getElementById('r-pag').value,
+        promo: document.getElementById('r-promo').value
     };
     const res = await authFetch(`${API}/admin/nueva-reserva`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const data = await res.json();
@@ -634,9 +660,9 @@ function formatMonto(valor) {
         }
     }
 function renderHistorial(data) {
-    let h = `<table><tr><th>Cliente</th><th>Destino</th><th>Pagado</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>`;
+    let h = `<table><tr><th>Cliente</th><th>Destino</th><th>Pagado</th><th>Total</th><th>Promo</th><th>Estado</th><th>Acciones</th></tr>`;
     if (data.length === 0) {
-        h += `<tr><td colspan="6" style="text-align:center;color:#a0aec0;">No se encontraron reservas.</td></tr>`;
+        h += `<tr><td colspan="7" style="text-align:center;color:#a0aec0;">No se encontraron reservas.</td></tr>`;
     } else {
         data.forEach(r => {
             const destinoNombre = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : 'N/D';
@@ -650,6 +676,7 @@ function renderHistorial(data) {
                 : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`;
 
             h += `<tr><td>${r.clientes ? r.clientes.apellido : 'N/D'}</td><td>${destinoNombre}</td><td>${formatMonto(r.monto_pagado)}</td><td>${formatMonto(r.monto_total)}</td>
+            <td>${r.promo ? `<span class="badge badge-promo">${r.promo}</span>` : '—'}</td>
             <td>${badgeEstadoPago(r.estado_pago, r.estado)}</td>
             <td>${btnPago}${btnCancelar}</td></tr>`;
         });
@@ -742,7 +769,7 @@ function calcularBonificaciones(dataReservas) {
 
         const key = `${empresa}|||${destino}`;
         if (!grupos[key]) grupos[key] = { empresa, destino, vendidos: 0 };
-        grupos[key].vendidos += Number(r.cantidad_pasajeros) || 0;
+        grupos[key].vendidos += Number(r.pasajeros_bono) || 0;
     });
 
     return Object.values(grupos)

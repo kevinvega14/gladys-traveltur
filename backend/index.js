@@ -27,6 +27,7 @@ function validar(schema) {
 const schemaRegistrarPago = z.object({
     monto: z.coerce.number().positive('El monto debe ser mayor a 0')
 });
+const promoSchema = z.enum(['2x1', '3x2', '4x3']).optional().or(z.literal('')).transform(v => v === '' ? null : v);
 const schemaNuevoViaje = z.object({
     destino: z.string().trim().min(2, 'El destino es obligatorio'),
     precio: z.coerce.number().positive('El precio debe ser mayor a 0'),
@@ -35,7 +36,8 @@ const schemaNuevoViaje = z.object({
     fecha_regreso: z.string().optional(),
     tipo: z.string().optional().default('Micro'),
     empresa: z.string().trim().optional(),
-    imagen_url: z.string().url('La imagen debe ser una URL válida').optional().or(z.literal(''))
+    imagen_url: z.string().url('La imagen debe ser una URL válida').optional().or(z.literal('')),
+    promo: promoSchema
 });
 
 const schemaNuevoCliente = z.object({
@@ -50,7 +52,8 @@ const schemaNuevaReserva = z.object({
     id_salida: z.coerce.number().int().positive('Viaje inválido'),
     cantidad_pasajeros: z.coerce.number().int().positive('La cantidad de pasajeros debe ser mayor a 0'),
     monto_total: z.coerce.number().nonnegative().optional().default(0),
-    monto_pagado: z.coerce.number().nonnegative().optional().default(0)
+    monto_pagado: z.coerce.number().nonnegative().optional().default(0),
+    promo: promoSchema
 });
 // CORS explícito para desarrollo local con Live Server
 const ORIGENES_PERMITIDOS = [
@@ -144,7 +147,18 @@ async function findOrCreateDestino(nombre) {
     if (errCrear) throw errCrear;
     return creado[0].id_destino;
 }
+const PROMO_RATIOS = {
+    '2x1': { grupo: 2, pagan: 1 },
+    '3x2': { grupo: 3, pagan: 2 },
+    '4x3': { grupo: 4, pagan: 3 }
+};
 
+// Cuántos pasajeros de esta reserva cuentan realmente para el bono de la mayorista
+function calcularPasajerosParaBono(cantidadPasajeros, promo) {
+    if (!promo || !PROMO_RATIOS[promo]) return cantidadPasajeros;
+    const { grupo, pagan } = PROMO_RATIOS[promo];
+    return Math.max(0, Math.round(cantidadPasajeros * (pagan / grupo)));
+}
 async function findOrCreateEmpresa(nombre) {
     const nombreLimpio = (nombre || 'GENERAL').toString().trim().toUpperCase();
 
@@ -202,12 +216,11 @@ app.get('/admin/destinos', async (req, res) => {
 });
 
 app.post('/admin/nuevo-viaje', requireAuth, validar(schemaNuevoViaje), async (req, res) => {
-    const { destino, precio, moneda, fecha, fecha_regreso, tipo, empresa, imagen_url } = req.body;
+    const { destino, precio, moneda, fecha, fecha_regreso, tipo, empresa, imagen_url, promo } = req.body;
     try {
         const id_destino = await findOrCreateDestino(destino);
         const id_empresa = await findOrCreateEmpresa(empresa);
 
-        // Si mandaron una URL de imagen y el destino no tenía una, la guardamos
         if (imagen_url) {
             await supabase.from('destinos')
                 .update({ imagen_url })
@@ -224,7 +237,8 @@ app.post('/admin/nuevo-viaje', requireAuth, validar(schemaNuevoViaje), async (re
             moneda: moneda || 'ARS',
             tipo_viaje: tipo || 'Micro',
             activo: true,
-            vendidos: 0
+            vendidos: 0,
+            promo: promo || null
         }]);
         if (errS) throw errS;
 
@@ -286,7 +300,7 @@ app.get('/admin/clientes', async (req, res) => {
 // ============================================================
 app.post('/admin/nueva-reserva', requireAuth, validar(schemaNuevaReserva), async (req, res) => {
     try {
-        const { id_cliente, id_salida, cantidad_pasajeros, monto_total, monto_pagado } = req.body;
+        const { id_cliente, id_salida, cantidad_pasajeros, monto_total, monto_pagado, promo } = req.body;
 
         const pax = parseInt(cantidad_pasajeros);
         const total = parseFloat(monto_total) || 0;
@@ -302,14 +316,17 @@ app.post('/admin/nueva-reserva', requireAuth, validar(schemaNuevaReserva), async
             monto_total: total,
             monto_pagado: pagado,
             estado_pago,
-            estado: 'Confirmada'
+            estado: 'Confirmada',
+            promo: promo || null
         }]);
         if (error) throw error;
+
+        const pasajerosBono = calcularPasajerosParaBono(pax, promo);
 
         const { data: salidaActual } = await supabase.from('salidas').select('vendidos').eq('id_salida', id_salida).single();
         if (salidaActual) {
             await supabase.from('salidas')
-                .update({ vendidos: (salidaActual.vendidos || 0) + pax })
+                .update({ vendidos: (salidaActual.vendidos || 0) + pasajerosBono })
                 .eq('id_salida', id_salida);
         }
 
@@ -323,17 +340,19 @@ app.post('/admin/nueva-reserva', requireAuth, validar(schemaNuevaReserva), async
 app.put('/admin/reservas/:id/cancelar', requireAuth, async (req, res) => {
     try {
         const { data: reserva, error: errR } = await supabase
-            .from('reservas').select('id_salida, cantidad_pasajeros, estado')
+            .from('reservas').select('id_salida, cantidad_pasajeros, estado, promo')
             .eq('id_reserva', req.params.id).single();
         if (errR) throw errR;
         if (reserva.estado === 'Cancelada') return res.json({ ok: true });
 
         await supabase.from('reservas').update({ estado: 'Cancelada' }).eq('id_reserva', req.params.id);
 
+        const pasajerosBono = calcularPasajerosParaBono(reserva.cantidad_pasajeros, reserva.promo);
+
         const { data: salida } = await supabase.from('salidas').select('vendidos').eq('id_salida', reserva.id_salida).single();
         if (salida) {
             await supabase.from('salidas')
-                .update({ vendidos: Math.max(0, (salida.vendidos || 0) - reserva.cantidad_pasajeros) })
+                .update({ vendidos: Math.max(0, (salida.vendidos || 0) - pasajerosBono) })
                 .eq('id_salida', reserva.id_salida);
         }
         res.json({ ok: true });
@@ -381,26 +400,36 @@ app.get('/admin/historial-reservas', async (req, res) => {
         const { data, error } = await supabase
             .from('reservas')
             .select(`
-                id_reserva, cantidad_pasajeros, monto_total, monto_pagado, estado_pago, estado, fecha_reserva,
+                id_reserva, cantidad_pasajeros, monto_total, monto_pagado, estado_pago, estado, fecha_reserva, promo,
                 clientes ( nombre, apellido ),
                 salidas ( fecha_salida, tipo_viaje, destinos ( nombre ), empresas ( nombre ) )
             `)
             .order('id_reserva', { ascending: false });
         if (error) throw error;
-        res.json(data);
+
+        const dataConBono = (data || []).map(r => ({
+            ...r,
+            pasajeros_bono: calcularPasajerosParaBono(r.cantidad_pasajeros, r.promo)
+        }));
+
+        res.json(dataConBono);
     } catch (e) { res.json([]); }
 });
 
 // ============================================================
-// RANKING DE VENTAS (bonificación cada 6 pasajeros vendidos)
+// RANKING DE VENTAS (bonificación cada 12 pasajeros vendidos)
 // ============================================================
 app.get('/admin/ranking-ventas', async (req, res) => {
     try {
-        const { data, error } = await supabase
-            .from('salidas')
-            .select(`vendidos, destinos ( nombre ), empresas ( nombre )`)
-            .gt('vendidos', 0);
-        if (error) throw error;
+       const { data, error } = await supabase
+    .from('salidas')
+    .select(`
+        id_salida, fecha_salida, fecha_regreso, precio_total, moneda,
+        tipo_viaje, activo, vendidos, promo,
+        destinos ( id_destino, nombre, imagen_url ),
+        empresas ( id_empresa, nombre )
+    `)
+    .order('fecha_salida', { ascending: true });
 
         const rank = {};
         (data || []).forEach(s => {
