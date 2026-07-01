@@ -264,7 +264,12 @@
             });
         } else sug.style.display="none";
     }
-
+function formatMonto(valor) {
+    if (valor === null || valor === undefined || valor === '') return '$0';
+    const num = Number(valor);
+    if (isNaN(num)) return '$0';
+    return '$' + num.toLocaleString('es-AR');
+}
     function badgeEstadoPago(estado_pago, estado) {
         if (estado === 'Cancelada') return `<span class="badge badge-cancelada">Cancelada</span>`;
         const map = { Completo: 'badge-completo', Parcial: 'badge-parcial', Pendiente: 'badge-pendiente' };
@@ -272,17 +277,17 @@
     }
 
     async function getH() {
-        const res = await fetch(`${API}/admin/historial-reservas`);
-        const data = await res.json();
-        let h = `<table><tr><th>Cliente</th><th>Destino</th><th>Pagado</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>`;
-        data.forEach(r => {
-            const destinoNombre = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : 'N/D';
-            h += `<tr><td>${r.clientes ? r.clientes.apellido : 'N/D'}</td><td>${destinoNombre}</td><td>$${r.monto_pagado}</td><td>$${r.monto_total}</td>
-            <td>${badgeEstadoPago(r.estado_pago, r.estado)}</td>
-            <td>${r.estado === 'Cancelada' ? '-' : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`}</td></tr>`;
-        });
-        document.getElementById('tab-his').innerHTML = h+"</table>";
-    }
+    const res = await fetch(`${API}/admin/historial-reservas`);
+    const data = await res.json();
+    let h = `<table><tr><th>Cliente</th><th>Destino</th><th>Pagado</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>`;
+    data.forEach(r => {
+        const destinoNombre = r.salidas && r.salidas.destinos ? r.salidas.destinos.nombre : 'N/D';
+        h += `<tr><td>${r.clientes ? r.clientes.apellido : 'N/D'}</td><td>${destinoNombre}</td><td>${formatMonto(r.monto_pagado)}</td><td>${formatMonto(r.monto_total)}</td>
+        <td>${badgeEstadoPago(r.estado_pago, r.estado)}</td>
+        <td>${r.estado === 'Cancelada' ? '-' : `<button class="btn-status agotado" onclick="cancelarR(${r.id_reserva})">CANCELAR</button>`}</td></tr>`;
+    });
+    document.getElementById('tab-his').innerHTML = h+"</table>";
+}
 
     async function cancelarR(id) {
         if(confirm("¿Cancelar esta reserva?")) {
