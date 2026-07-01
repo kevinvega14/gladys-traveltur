@@ -37,14 +37,8 @@ const schemaNuevoViaje = z.object({
     tipo: z.string().optional().default('Micro'),
     empresa: z.string().trim().optional(),
     imagen_url: z.string().url('La imagen debe ser una URL válida').optional().or(z.literal('')),
-    promo: promoSchema
-});
-
-const schemaNuevoCliente = z.object({
-    apellido: z.string().trim().min(2, 'El apellido es obligatorio'),
-    nombre: z.string().trim().optional(),
-    dni: z.string().trim().min(6, 'DNI inválido'),
-    telefono: z.string().trim().optional()
+    promo: promoSchema,
+    incluye: z.string().trim().optional()
 });
 
 const schemaNuevaReserva = z.object({
@@ -55,6 +49,15 @@ const schemaNuevaReserva = z.object({
     monto_pagado: z.coerce.number().nonnegative().optional().default(0),
     promo: promoSchema
 });
+
+const schemaNuevoCliente = z.object({
+    apellido: z.string().trim().min(2, 'El apellido es obligatorio'),
+    nombre: z.string().trim().optional(),
+    dni: z.string().trim().min(6, 'DNI inválido'),
+    telefono: z.string().trim().optional()
+});
+
+
 // CORS explícito para desarrollo local con Live Server
 const ORIGENES_PERMITIDOS = [
     'http://127.0.0.1:5500',
@@ -216,7 +219,7 @@ app.get('/admin/destinos', async (req, res) => {
 });
 
 app.post('/admin/nuevo-viaje', requireAuth, validar(schemaNuevoViaje), async (req, res) => {
-    const { destino, precio, moneda, fecha, fecha_regreso, tipo, empresa, imagen_url, promo } = req.body;
+    const { destino, precio, moneda, fecha, fecha_regreso, tipo, empresa, imagen_url, promo, incluye } = req.body;
     try {
         const id_destino = await findOrCreateDestino(destino);
         const id_empresa = await findOrCreateEmpresa(empresa);
@@ -238,7 +241,8 @@ app.post('/admin/nuevo-viaje', requireAuth, validar(schemaNuevoViaje), async (re
             tipo_viaje: tipo || 'Micro',
             activo: true,
             vendidos: 0,
-            promo: promo || null
+            promo: promo || null,
+            incluye: incluye || null
         }]);
         if (errS) throw errS;
 
@@ -419,34 +423,20 @@ app.get('/admin/historial-reservas', async (req, res) => {
 // ============================================================
 // RANKING DE VENTAS (bonificación cada 12 pasajeros vendidos)
 // ============================================================
-app.get('/admin/ranking-ventas', async (req, res) => {
+app.get('/admin/ranking', async (req, res) => {
     try {
-       const { data, error } = await supabase
-    .from('salidas')
-    .select(`
-        id_salida, fecha_salida, fecha_regreso, precio_total, moneda,
-        tipo_viaje, activo, vendidos, promo,
-        destinos ( id_destino, nombre, imagen_url ),
-        empresas ( id_empresa, nombre )
-    `)
-    .order('fecha_salida', { ascending: true });
-
-        const rank = {};
-        (data || []).forEach(s => {
-            const destino = s.destinos ? s.destinos.nombre : 'N/D';
-            const empresa = s.empresas ? s.empresas.nombre : 'N/D';
-            const k = `${empresa}-${destino}`;
-            if (!rank[k]) rank[k] = { empresa, destino, vendidos: 0 };
-            rank[k].vendidos += (s.vendidos || 0);
-        });
-
-        const resultado = Object.values(rank).map(v => {
-            const resto = v.vendidos % 6;
-            return { ...v, gratis: Math.floor(v.vendidos / 6), falta: resto === 0 ? 6 : 6 - resto };
-        }).sort((a, b) => b.vendidos - a.vendidos);
-
-        res.json(resultado);
-    } catch (e) { res.json([]); }
+        const { data, error } = await supabase
+            .from('salidas')
+            .select(`
+                id_salida, fecha_salida, fecha_regreso, precio_total, moneda,
+                tipo_viaje, activo, vendidos, promo, incluye,
+                destinos ( id_destino, nombre, imagen_url ),
+                empresas ( id_empresa, nombre )
+            `)
+            .order('fecha_salida', { ascending: true });
+        if (error) throw error;
+        res.json(data);
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 // ============================================================
 // ASISTENTE VIRTUAL (Gemini) — /api/chat

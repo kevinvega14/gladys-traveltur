@@ -35,6 +35,7 @@
     text-align: center;
     color: white;
 }
+.hero h1 { text-shadow: 0 4px 20px rgba(0,0,0,0.25); }
     .hero h1 {
         margin: 0;
         font-size: clamp(32px, 5vw, 44px);
@@ -338,7 +339,45 @@
     .categorias-bar { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
     .cat-btn { flex-shrink: 0; }
 }
+.card-tag { white-space: normal; max-width: 78%; line-height: 1.3; font-size: 9.5px; }
+.card-promo-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: linear-gradient(135deg, #f97316, #dc2626);
+    color: white; font-size: 11px; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 7px 14px; border-radius: 20px;
+    box-shadow: 0 6px 16px -4px rgba(220,38,38,0.6);
+    animation: promo-pulso 1.6s infinite;
+}
+@keyframes promo-pulso { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(13,44,84,0.55); backdrop-filter: blur(4px); z-index: 3000; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity .2s ease; }
+.modal-overlay.visible { display: flex; opacity: 1; }
+.modal-content { background: white; border-radius: 20px; width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 30px 80px -20px rgba(0,0,0,0.4); transform: translateY(16px) scale(0.98); transition: transform .2s ease; }
+.modal-overlay.visible .modal-content { transform: translateY(0) scale(1); }
+.modal-close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.5); color: white; border: none; font-size: 20px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: rgba(0,0,0,0.7); }
+.modal-img-wrap { position: relative; }
+.modal-img { width: 100%; height: 260px; object-fit: cover; display: block; border-radius: 20px 20px 0 0; }
+.modal-body { display: flex; gap: 28px; padding: 28px; flex-wrap: wrap; }
+.modal-main { flex: 2; min-width: 280px; }
+.modal-sidebar { flex: 1; min-width: 220px; background: #fafbfc; border: 1px solid var(--borde); border-radius: 16px; padding: 22px; align-self: flex-start; position: sticky; top: 0; }
+.modal-main h2 { margin: 0 0 4px; color: var(--azul); font-weight: 900; font-size: 22px; letter-spacing: -0.01em; }
+.modal-empresa { font-size: 12px; font-weight: 700; color: var(--texto-sec); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 18px; }
+.modal-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--borde); margin-bottom: 18px; }
+.modal-tab { padding: 10px 16px; border: none; background: none; cursor: pointer; font-weight: 700; font-size: 12px; color: var(--texto-sec); text-transform: uppercase; border-bottom: 2px solid transparent; width: auto; }
+.modal-tab.active { color: var(--celeste); border-bottom-color: var(--celeste); }
+.modal-tab-content { display: none; }
+.modal-tab-content.active { display: block; }
+.modal-detalle-item { font-size: 14px; margin-bottom: 14px; color: #1a202c; line-height: 1.5; }
+.modal-incluye { font-size: 13.5px; color: #1a202c; white-space: pre-line; line-height: 1.7; background: #f0f6ff; border-radius: 10px; padding: 14px 16px; margin-top: 18px; }
+.modal-nota { font-size: 12.5px; color: var(--texto-sec); background: #f0f6ff; border-radius: 10px; padding: 12px 14px; margin-top: 20px; }
+.modal-precio-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--texto-sec); letter-spacing: 0.04em; }
+.modal-precio { font-size: 30px; font-weight: 900; color: var(--azul); margin: 6px 0 18px; letter-spacing: -0.02em; }
+.btn-comprar { width: 100%; background: var(--verde); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 13.5px; text-transform: uppercase; cursor: pointer; transition: background .15s ease, transform .15s ease; }
+.btn-comprar:hover { background: #15803d; transform: translateY(-1px); }
+.modal-sidebar-nota { font-size: 11.5px; color: var(--texto-sec); text-align: center; margin-top: 12px; }
+
+@media (max-width: 640px) { .modal-body { flex-direction: column; padding: 20px; } .modal-sidebar { position: static; } }
 </style>
 </head>
 <body>
@@ -352,11 +391,11 @@
     </div>
     <div class="categorias-bar" id="categorias-bar">
     <button class="cat-btn active" data-cat="todos"><span class="cat-icon">🌎</span><span class="cat-label">Todos</span></button>
-    <button class="cat-btn" data-cat="promo"><span class="cat-icon">🚨</span><span class="cat-label">Promos</span></button>
     <button class="cat-btn" data-cat="micro"><span class="cat-icon">🚌</span><span class="cat-label">Micros</span></button>
     <button class="cat-btn" data-cat="vuelo"><span class="cat-icon">✈️</span><span class="cat-label">Vuelos</span></button>
     <button class="cat-btn" data-cat="escapada"><span class="cat-icon">🏔️</span><span class="cat-label">Escapadas</span></button>
     <button class="cat-btn" data-cat="playa"><span class="cat-icon">🏖️</span><span class="cat-label">Playa</span></button>
+    <button class="cat-btn" data-cat="promo"><span class="cat-icon">🚨</span><span class="cat-label">Promos</span></button>
 </div>
 
 <h2 class="section-title" id="resultados-title">Todas las ofertas</h2>
@@ -432,7 +471,6 @@ function categoriasDe(v) {
         if (noches > 0 && noches <= 3) cats.push('escapada');
     }
     if (v.promo) cats.push('promo');
-
     return cats;
 }
 
@@ -479,20 +517,107 @@ function dibujar(lista, id) {
                 <h3>${v.destinos.nombre}</h3>
                 <div class="empresa">${v.empresas ? v.empresas.nombre : ''}</div>
                 <div class="price">${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}</div>
-                <a href="https://wa.me/5491135592160?text=${encodeURIComponent('Hola Gladys! Consulto por ' + v.destinos.nombre)}" class="btn-wa" target="_blank">Consultar</a>
+                <button class="btn-wa" onclick="abrirModal(${v.id_salida})">Ver paquete</button>
+
             </div>
         </div>`).join('');
 }
+let viajeEnModal = null;
 
+function calcularNoches(v) {
+    if (!v.fecha_regreso || v.fecha_regreso === v.fecha_salida) return null;
+    const salida = new Date(v.fecha_salida + 'T00:00:00');
+    const regreso = new Date(v.fecha_regreso + 'T00:00:00');
+    const noches = Math.round((regreso - salida) / (1000 * 60 * 60 * 24));
+    return noches > 0 ? noches : null;
+}
+
+function formatoFechaLarga(fecha) {
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function abrirModal(idSalida) {
+    const v = cache.find(x => x.id_salida === idSalida);
+    if (!v) return;
+    viajeEnModal = v;
+
+    document.getElementById('modal-img').src = imagenDe(v);
+    document.getElementById('modal-titulo').innerText = v.destinos.nombre;
+    document.getElementById('modal-empresa').innerText = v.empresas ? v.empresas.nombre : '';
+    document.getElementById('modal-empresa-2').innerText = v.empresas ? v.empresas.nombre : 'A confirmar';
+    document.getElementById('modal-tipo').innerText = v.tipo_viaje;
+    document.getElementById('modal-destino').innerText = v.destinos.nombre;
+
+    const noches = calcularNoches(v);
+    document.getElementById('modal-duracion').innerText = noches ? `${noches + 1} días / ${noches} noche${noches > 1 ? 's' : ''}` : 'Salida de un día';
+
+    document.getElementById('modal-fecha-salida').innerText = formatoFechaLarga(v.fecha_salida);
+    document.getElementById('modal-fecha-regreso').innerText = v.fecha_regreso ? formatoFechaLarga(v.fecha_regreso) : '—';
+
+    document.getElementById('modal-precio').innerText = `${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}`;
+
+    // Muestra el "incluye" real si el viaje lo tiene cargado; si no, la nota genérica
+    if (v.incluye && v.incluye.trim()) {
+        document.getElementById('modal-incluye').innerText = v.incluye;
+        document.getElementById('modal-incluye-wrap').style.display = 'block';
+        document.getElementById('modal-nota-generica').style.display = 'none';
+    } else {
+        document.getElementById('modal-incluye-wrap').style.display = 'none';
+        document.getElementById('modal-nota-generica').style.display = 'block';
+    }
+
+    const badgePromo = document.getElementById('modal-promo-badge');
+    if (v.promo) { badgePromo.innerText = `🚨 ${v.promo}`; badgePromo.style.display = 'inline-block'; }
+    else { badgePromo.style.display = 'none'; }
+
+    document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('.modal-tab[data-tab="resumen"]').classList.add('active');
+    document.getElementById('modal-tab-resumen').classList.add('active');
+
+    document.getElementById('modal-overlay').classList.add('visible');
+}
+
+function cerrarModal() {
+    document.getElementById('modal-overlay').classList.remove('visible');
+    viajeEnModal = null;
+}
+
+document.querySelectorAll('.modal-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`modal-tab-${btn.dataset.tab}`).classList.add('active');
+    });
+});
+
+window.addEventListener('load', function () {    
+    document.getElementById('modal-close').addEventListener('click', cerrarModal);    
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {        
+        if (e.target.id === 'modal-overlay') cerrarModal();    
+    });    
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal(); });    
+    document.getElementById('modal-comprar').addEventListener('click', () => {        
+        if (!viajeEnModal) return;        
+        const v = viajeEnModal;        
+        let mensaje = `¡Hola Gladys Traveltur! 👋 Quiero reservar el paquete a *${v.destinos.nombre}* con salida el ${formatoFechaLarga(v.fecha_salida)}`;        
+        if (v.fecha_regreso && v.fecha_regreso !== v.fecha_salida) mensaje += ` y regreso el ${formatoFechaLarga(v.fecha_regreso)}`;        
+        mensaje += `.\n\nTipo de viaje: ${v.tipo_viaje}${v.empresas ? ' (' + v.empresas.nombre + ')' : ''}`;        
+        mensaje += `\nPrecio por persona: ${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}`;        
+        if (v.promo) mensaje += `\nPromoción: ${v.promo}`;        
+        if (v.incluye) mensaje += `\n\nIncluye:\n${v.incluye}`;        
+        mensaje += `\n\nMi nombre es: _______`;        
+        window.open(`https://wa.me/5491135592160?text=${encodeURIComponent(mensaje)}`, '_blank');    
+    });
+});
         function imagenDe(v) {
             if (v.destinos.imagen_url) return v.destinos.imagen_url;
             return fotos[norm(v.destinos.nombre)] || FOTO_DEFAULT;
         }
 
-        
         window.onload = cargar;
-
-
 </script>
 <div id="chat-widget">
     <button id="chat-toggle" aria-label="Abrir asistente virtual">💬</button>
@@ -575,6 +700,45 @@ function dibujar(lista, id) {
     document.getElementById('chat-send').addEventListener('click', enviarMensajeChat);
     document.getElementById('chat-input').addEventListener('keyup', e => { if (e.key === 'Enter') enviarMensajeChat(); });
 </script>
-
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <button id="modal-close" class="modal-close" aria-label="Cerrar">×</button>
+        <div class="modal-img-wrap">
+            <img id="modal-img" src="" class="modal-img">
+            <span id="modal-promo-badge" class="card-promo-badge" style="display:none;"></span>
+        </div>
+        <div class="modal-body">
+            <div class="modal-main">
+                <h2 id="modal-titulo"></h2>
+                <div id="modal-empresa" class="modal-empresa"></div>
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="resumen">Resumen</button>
+                    <button class="modal-tab" data-tab="transporte">Transporte</button>
+                </div>
+                <div id="modal-tab-resumen" class="modal-tab-content active">
+                    <div class="modal-detalle-item">🗺️ <strong>Destino:</strong> <span id="modal-destino"></span></div>
+                    <div class="modal-detalle-item">🌙 <strong>Duración:</strong> <span id="modal-duracion"></span></div>
+                    <div class="modal-detalle-item">📅 <strong>Salida:</strong> <span id="modal-fecha-salida"></span></div>
+                    <div class="modal-detalle-item">📅 <strong>Regreso:</strong> <span id="modal-fecha-regreso"></span></div>
+                    <div id="modal-incluye-wrap" style="display:none;">
+                        <strong style="font-size:13px;">✅ Este paquete incluye:</strong>
+                        <div id="modal-incluye" class="modal-incluye"></div>
+                    </div>
+                    <p id="modal-nota-generica" class="modal-nota">¿Querés saber qué incluye exactamente este paquete? Preguntanos por WhatsApp al comprar y te lo confirmamos al instante.</p>
+                </div>
+                <div id="modal-tab-transporte" class="modal-tab-content">
+                    <div class="modal-detalle-item">🚌 <strong>Tipo de viaje:</strong> <span id="modal-tipo"></span></div>
+                    <div class="modal-detalle-item">🏢 <strong>Empresa:</strong> <span id="modal-empresa-2"></span></div>
+                </div>
+            </div>
+            <div class="modal-sidebar">
+                <div class="modal-precio-label">Precio por persona</div>
+                <div id="modal-precio" class="modal-precio"></div>
+                <button id="modal-comprar" class="btn-comprar">💬 Comprar / Reservar viaje</button>
+                <div class="modal-sidebar-nota">Te redirigimos a WhatsApp para coordinar la reserva con nuestro equipo.</div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

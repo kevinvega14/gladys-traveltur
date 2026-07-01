@@ -380,16 +380,31 @@
             <div class="f-group"><label>Fecha Salida</label><input type="date" id="v-fec"></div>
             <div class="f-group"><label>Fecha Regreso</label><input type="date" id="v-fec-vuelta"></div>
         </div>
-        <div class="f-group" style="margin-bottom:30px;"><label>Imagen (URL, opcional)</label><input type="text" id="v-img" placeholder="https://..."></div>
-        <div class="f-group" style="margin-bottom:30px;">
-    <label>Promoción (opcional)</label>
-    <select id="v-promo">
-        <option value="">Sin promoción</option>
-        <option value="2x1">2x1</option>
-        <option value="3x2">3x2</option>
-        <option value="4x3">4x3</option>
-    </select>
+        <div class="f-row">    
+    <div class="f-group">
+        <label>Imagen (URL, opcional)</label>
+        <input type="text" id="v-img" placeholder="https://...">
+    </div>    
+    <div class="f-group">
+        <label>Promoción (opcional)</label>        
+        <select id="v-promo">            
+            <option value="">Sin promoción</option>            
+            <option value="2x1">2x1</option>            
+            <option value="3x2">3x2</option>            
+            <option value="4x3">4x3</option>        
+        </select>    
+    </div>
 </div>
+
+<div class="f-group" style="margin-bottom:14px;">    
+    <label>¿Qué incluye este paquete?</label>    
+    <textarea id="v-incluye" rows="5" style="width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--borde); font-family:inherit; font-size:13.5px; resize:vertical;" placeholder="Se completa solo al tocar 'Autocompletar', o escribilo a mano..."></textarea>
+</div>
+
+<button type="button" class="btn-status disponible" onclick="autocompletarIncluye()" style="width:auto; margin-bottom:24px; cursor:pointer;">
+    ✨ Autocompletar Estándar
+</button>
+
         <button class="btn-blue" onclick="saveV()">PUBLICAR EN WEB</button>
         <div id="tab-viajes-admin"></div>
     </div>
@@ -502,7 +517,136 @@
         const data = await res.json();
         document.getElementById('lista-empresas').innerHTML = data.map(e => `<option value="${e.nombre}">`).join('');
     }
+const normAdmin = (t) => (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
+// -------------------- PLANTILLAS DE "INCLUYE" --------------------
+const PLANTILLA_CATARATAS =
+`• Micro semicama ida y vuelta
+- Hotel en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje
+- Traslado a Minas de Wanda
+- Traslado a Ruinas de San Ignacio`;
+
+const PLANTILLA_COSTA =
+`• Micro semicama ida y vuelta
+- Hotel con desayuno incluido
+- Coordinador durante todo el viaje`;
+
+const PLANTILLA_BARILOCHE =
+`• Micro semicama ida y vuelta
+- Hotel en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje`;
+
+const PLANTILLA_MONTANA_GENERICA =
+`• Micro semicama ida y vuelta
+- Hotel en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje`;
+
+const PLANTILLA_MV_SANRAFAEL =
+`• Bus semicama ida y vuelta (opcional cochecama: +$20.000 por persona)
+- Hotel Intis en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje
+- Excursión incluida: visita a Las Leñas`;
+
+const PLANTILLA_MV_MADRYN =
+`• Bus semicama ida y vuelta (opcional cochecama: +$20.000 por persona)
+- Hotel Petit/Marina en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje
+- Traslado a Península Valdés
+- Visita a Las Grutas`;
+
+const PLANTILLA_AP_BRASIL =
+`• Hotel Beack, con pileta a 250 mts. del mar
+- Desayuno buffet incluido (opcional media pensión: +USD 65 por persona)
+- Coordinador durante todo el viaje
+💵 Precio en dólares (destino internacional)`;
+
+const PLANTILLA_AP_SANNICOLAS =
+`• Bus mix (San Nicolás + San Pedro en el día)
+- Visita al Santuario de Ntra. Sra. de San Nicolás
+- Visita a la Vuelta de Obligado
+- Recorrido por la Costanera y centro de San Pedro
+- No incluye almuerzo`;
+
+const PLANTILLA_AP_GUALEGUAYCHU =
+`• Bus ida y vuelta
+- Hotel Yaro con desayuno incluido
+- Coordinador durante todo el viaje
+- Traslado a Termas del Guaychú`;
+
+const PLANTILLA_AP_SANRAFAEL =
+`• Bus ida y vuelta
+- Hotel Complejo Puelches en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje`;
+
+const PLANTILLA_AP_MADRYN =
+`• Bus semicama ida y vuelta (opcional cochecama: +$15.000 por persona)
+- Hotel Petit en base a media pensión (desayuno y cena) — bebidas no incluidas
+- Coordinador durante todo el viaje`;
+
+const EMPRESAS_MEJORES_VIAJES = ['mejores viajes'];
+const EMPRESAS_AP = ['ap', 'ap turismo'];
+
+function esEmpresaAdmin(empresaNombre, lista) {
+    const n = normAdmin(empresaNombre);
+    return lista.some(k => n === k || n.includes(k));
+}
+
+function buscarPlantillaIncluye(destino, empresa) {
+    const d = normAdmin(destino);
+
+    if (esEmpresaAdmin(empresa, EMPRESAS_MEJORES_VIAJES)) {
+        if (d.includes('rafael') || d.includes('lenas') || d.includes('leñas')) return PLANTILLA_MV_SANRAFAEL;
+        if (d.includes('madryn')) return PLANTILLA_MV_MADRYN;
+    }
+    if (esEmpresaAdmin(empresa, EMPRESAS_AP)) {
+        if (d.includes('canasvieiras') || d.includes('brasil')) return PLANTILLA_AP_BRASIL;
+        if (d.includes('nicolas')) return PLANTILLA_AP_SANNICOLAS;
+        if (d.includes('gualeguaychu')) return PLANTILLA_AP_GUALEGUAYCHU;
+        if (d.includes('rafael')) return PLANTILLA_AP_SANRAFAEL;
+        if (d.includes('madryn')) return PLANTILLA_AP_MADRYN;
+    }
+
+    if (d.includes('cataratas') || d.includes('iguazu')) return PLANTILLA_CATARATAS;
+    if (['mar del plata','san bernardo','santa teresita','mar de ajo'].some(k => d.includes(k))) return PLANTILLA_COSTA;
+    if (d.includes('bariloche')) return PLANTILLA_BARILOCHE;
+    if (['carlos paz','san rafael','mendoza','merlo'].some(k => d.includes(k))) return PLANTILLA_MONTANA_GENERICA;
+
+    return null;
+}
+
+// Destinos donde SIEMPRE se cobra en USD (ampliá esta lista a medida que sumes destinos internacionales)
+const DESTINOS_INTERNACIONALES = ['brasil', 'canasvieiras'];
+
+function esDestinoInternacionalAdmin(destino) {
+    const d = normAdmin(destino);
+    return DESTINOS_INTERNACIONALES.some(k => d.includes(k));
+}
+
+function autocompletarIncluye() {
+    const destino = document.getElementById('v-dest').value;
+    const empresa = document.getElementById('v-emp').value;
+
+    if (!destino) { showToast('Escribí primero el destino', 'error'); return; }
+
+    const plantilla = buscarPlantillaIncluye(destino, empresa);
+    if (!plantilla) {
+        showToast('No tengo una plantilla para esta combinación todavía — completalo a mano', 'info');
+        return;
+    }
+
+    const textarea = document.getElementById('v-incluye');
+    if (textarea.value.trim() && !confirm('Ya hay texto cargado en "Incluye". ¿Reemplazarlo con la plantilla?')) return;
+
+    textarea.value = plantilla;
+    showToast('Completado. Revisalo antes de publicar', 'success');
+
+    // Chequeo de moneda para destinos internacionales
+    if (esDestinoInternacionalAdmin(destino) && document.getElementById('v-mon').value !== 'USD') {
+        document.getElementById('v-mon').value = 'USD';
+        showToast('Destino internacional detectado: moneda ajustada a USD', 'info');
+    }
+}
     async function saveV() {
     const body = {
         destino: document.getElementById('v-dest').value,
@@ -513,15 +657,19 @@
         fecha: document.getElementById('v-fec').value,
         fecha_regreso: document.getElementById('v-fec-vuelta').value,
         imagen_url: document.getElementById('v-img').value,
-        promo: document.getElementById('v-promo').value
+        promo: document.getElementById('v-promo').value,
+        incluye: document.getElementById('v-incluye').value
     };
     if (!body.destino || !body.precio || !body.fecha) { showToast('Completá destino, monto y fecha de salida', 'error'); return; }
 
     try {
         const res = await authFetch(`${API}/admin/nuevo-viaje`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json();
-        if (res.ok) { showToast('¡Viaje publicado con éxito!', 'success'); getVAdmin(); }
-        else showToast('Error: ' + (data.error || JSON.stringify(data.detalles)), 'error');
+        if (res.ok) {
+            showToast('¡Viaje publicado con éxito!', 'success');
+            document.getElementById('v-incluye').value = ''; // limpia para el próximo alta
+            getVAdmin();
+        } else showToast('Error: ' + (data.error || JSON.stringify(data.detalles)), 'error');
     } catch (e) { console.error('saveV falló:', e); }
 }
 
