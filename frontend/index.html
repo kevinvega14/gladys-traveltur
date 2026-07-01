@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Gladys Traveltur - Ofertas 2026</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧳</text></svg>">
     <style>
     :root {
         --azul: #0d2c54;
@@ -403,8 +403,8 @@
 
     <script>
         const API = 'http://localhost:4000';
-        const FOTO_DEFAULT = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600";
-        const fotos = { "bariloche": "Fondos/bariloche.jpg", "brasil": "Fondos/brasil.jpg", "carlos paz": "Fondos/carlospaz.jpg", "cataratas del iguazú": "Fondos/cataratas.jpg", "jujuy": "Fondos/jujuy.jpg", "mendoza": "Fondos/mendoza.jpg", "default": FOTO_DEFAULT };
+        const FOTO_DEFAULT = "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop&q=80"; // mapa/valija/paisaje genérico de viajes
+
 
         let cache = [];
         const norm = (t) => (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -460,8 +460,8 @@ const LABELS_CATEGORIA = {
 function categoriasDe(v) {
     const cats = [];
     const tipo = norm(v.tipo_viaje);
-    if (tipo.includes('micro')) cats.push('micro');
-    if (tipo.includes('aer')) cats.push('vuelo');
+    if (tipo.includes('micro') || tipo.includes('bus')) cats.push('micro');
+    if (tipo.includes('aer') || tipo.includes('vuelo')) cats.push('vuelo');
 
     const destino = norm(v.destinos.nombre);
     if (DESTINOS_PLAYA.some(k => destino.includes(k))) cats.push('playa');
@@ -485,7 +485,6 @@ document.querySelectorAll('.cat-btn').forEach(btn => {
         filtrar();
     });
 });
-
 function filtrar() {
     const txt = norm(document.getElementById('bus-txt').value);
     const ord = document.getElementById('orden').value;
@@ -584,38 +583,92 @@ function cerrarModal() {
     viajeEnModal = null;
 }
 
-document.querySelectorAll('.modal-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(`modal-tab-${btn.dataset.tab}`).classList.add('active');
-    });
-});
 
-window.addEventListener('load', function () {    
-    document.getElementById('modal-close').addEventListener('click', cerrarModal);    
-    document.getElementById('modal-overlay').addEventListener('click', (e) => {        
-        if (e.target.id === 'modal-overlay') cerrarModal();    
-    });    
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal(); });    
-    document.getElementById('modal-comprar').addEventListener('click', () => {        
-        if (!viajeEnModal) return;        
-        const v = viajeEnModal;        
-        let mensaje = `¡Hola Gladys Traveltur! 👋 Quiero reservar el paquete a *${v.destinos.nombre}* con salida el ${formatoFechaLarga(v.fecha_salida)}`;        
-        if (v.fecha_regreso && v.fecha_regreso !== v.fecha_salida) mensaje += ` y regreso el ${formatoFechaLarga(v.fecha_regreso)}`;        
-        mensaje += `.\n\nTipo de viaje: ${v.tipo_viaje}${v.empresas ? ' (' + v.empresas.nombre + ')' : ''}`;        
-        mensaje += `\nPrecio por persona: ${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}`;        
-        if (v.promo) mensaje += `\nPromoción: ${v.promo}`;        
-        if (v.incluye) mensaje += `\n\nIncluye:\n${v.incluye}`;        
-        mensaje += `\n\nMi nombre es: _______`;        
-        window.open(`https://wa.me/5491135592160?text=${encodeURIComponent(mensaje)}`, '_blank');    
+
+window.addEventListener('load', function () {
+    // Pestañas del modal (Resumen / Transporte)
+    document.querySelectorAll('.modal-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`modal-tab-${btn.dataset.tab}`).classList.add('active');
+        });
+    });
+
+    // Cerrar modal
+    document.getElementById('modal-close').addEventListener('click', cerrarModal);
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+        if (e.target.id === 'modal-overlay') cerrarModal();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModal(); });
+
+    // Botón Comprar
+    document.getElementById('modal-comprar').addEventListener('click', () => {
+        if (!viajeEnModal) return;
+        const v = viajeEnModal;
+        let mensaje = `¡Hola Gladys Traveltur! 👋 Quiero reservar el paquete a *${v.destinos.nombre}* con salida el ${formatoFechaLarga(v.fecha_salida)}`;
+        if (v.fecha_regreso && v.fecha_regreso !== v.fecha_salida) mensaje += ` y regreso el ${formatoFechaLarga(v.fecha_regreso)}`;
+        mensaje += `.\n\nTipo de viaje: ${v.tipo_viaje}${v.empresas ? ' (' + v.empresas.nombre + ')' : ''}`;
+        mensaje += `\nPrecio por persona: ${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}`;
+        if (v.promo) mensaje += `\nPromoción: ${v.promo}`;
+        if (v.incluye) mensaje += `\n\nIncluye:\n${v.incluye}`;
+        mensaje += `\n\nMi nombre es: _______`;
+        window.open(`https://wa.me/5491135592160?text=${encodeURIComponent(mensaje)}`, '_blank');
     });
 });
         function imagenDe(v) {
-            if (v.destinos.imagen_url) return v.destinos.imagen_url;
-            return fotos[norm(v.destinos.nombre)] || FOTO_DEFAULT;
-        }
+    // 1. Prioridad absoluta: imagen real cargada a mano en el form
+    if (v.destinos.imagen_url) return v.destinos.imagen_url;
+
+    const destino = norm(v.destinos.nombre);
+    const tipo = norm(v.tipo_viaje);
+
+    // -------- VERIFICADAS (Wikimedia Commons, contenido confirmado) --------
+    if (destino.includes('mendoza')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Diamandes%20Winery.JPG?width=800'; // viñedo + Andes, Mendoza
+    }
+    if (destino.includes('cataratas') || destino.includes('iguazu')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Garganta%20del%20Diablo%20or%20Devil%20Throat%20Iguazu%20Falls%20Argentina%20Luca%20Galuzzi%202005.JPG?width=800'; // Garganta del Diablo
+    }
+    if (destino.includes('bariloche')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Lago%20Nahuel%20Huapi.jpg?width=800'; // Lago Nahuel Huapi
+    }
+    if (destino.includes('calafate')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Glaciar%20Perito%20Moreno14%20-%20Argentina.JPG?width=800'; // Glaciar Perito Moreno
+    }
+    if (destino.includes('jujuy') || destino.includes('purmamarca') || destino.includes('tilcara')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Cerro%20de%20los%20siete%20colores.JPG?width=800'; // Cerro de los Siete Colores
+    }
+    if (destino.includes('mar del plata') || destino.includes('gesell') || destino.includes('pinamar')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Mar%20del%20plata%20mar.JPG?width=800'; // Playa Bristol, Mar del Plata
+    }
+    if (destino.includes('brasil') || destino.includes('rio de janeiro') || destino.includes('buzios')) {
+        return 'https://commons.wikimedia.org/wiki/Special:FilePath/Cristo%20Redentor%20Rio%20de%20Janeiro%202.jpg?width=800'; // Cristo Redentor
+    }
+
+    // -------- SIN VERIFICAR AÚN — pedime que las confirme, o revisalas vos --------
+    if (destino.includes('cordoba') || destino.includes('carlos paz')) {
+        return 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&h=600&fit=crop&q=80'; // VERIFICAR: sierras genéricas
+    }
+    if (destino.includes('salta') || destino.includes('cafayate')) {
+        return 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&h=600&fit=crop&q=80'; // VERIFICAR: valle/montaña genérica
+    }
+    if (destino.includes('cancun') || destino.includes('punta cana') || destino.includes('caribe')) {
+        return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop&q=80'; // VERIFICAR: playa genérica (no necesariamente Caribe real)
+    }
+
+    // -------- Fallback por tipo de transporte --------
+    if (tipo.includes('aer') || tipo.includes('vuelo')) {
+        return 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=600&fit=crop&q=80'; // VERIFICAR: avión/vista aérea
+    }
+    if (tipo.includes('micro') || tipo.includes('bus')) {
+        return 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&h=600&fit=crop&q=80'; // VERIFICAR: ruta/carretera
+    }
+
+    // -------- Caso por defecto --------
+    return FOTO_DEFAULT;
+}
 
         window.onload = cargar;
 </script>
