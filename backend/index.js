@@ -328,6 +328,8 @@ app.get('/admin/ranking-ventas', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor Gladys OK en puerto ${PORT}`));
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`🚀 Servidor Gladys OK en puerto ${PORT}`));
+}
 
 module.exports = { app, capitalizar };
