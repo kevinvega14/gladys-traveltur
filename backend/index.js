@@ -5,7 +5,67 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+const { z } = require('zod');
+
+// Middleware genérico: valida req.body contra un schema de Zod
+function validar(schema) {
+    return (req, res, next) => {
+        const resultado = schema.safeParse(req.body);
+        if (!resultado.success) {
+            const errores = resultado.error.issues.map(i => `${i.path.join('.')}: ${i.message}`);
+            return res.status(400).json({ error: 'Datos inválidos', detalles: errores });
+        }
+        req.body = resultado.data; // body ya "limpio" y tipado
+        next();
+    };
+}
+
+// Schemas
+const schemaNuevoViaje = z.object({
+    destino: z.string().trim().min(2, 'El destino es obligatorio'),
+    precio: z.coerce.number().positive('El precio debe ser mayor a 0'),
+    moneda: z.enum(['ARS', 'USD']).optional().default('ARS'),
+    fecha: z.string().min(1, 'La fecha de salida es obligatoria'),
+    fecha_regreso: z.string().optional(),
+    tipo: z.string().optional().default('Micro'),
+    empresa: z.string().trim().optional(),
+    imagen_url: z.string().url('La imagen debe ser una URL válida').optional().or(z.literal(''))
+});
+
+const schemaNuevoCliente = z.object({
+    apellido: z.string().trim().min(2, 'El apellido es obligatorio'),
+    nombre: z.string().trim().optional(),
+    dni: z.string().trim().min(6, 'DNI inválido'),
+    telefono: z.string().trim().optional()
+});
+
+const schemaNuevaReserva = z.object({
+    id_cliente: z.coerce.number().int().positive('Cliente inválido'),
+    id_salida: z.coerce.number().int().positive('Viaje inválido'),
+    cantidad_pasajeros: z.coerce.number().int().positive('La cantidad de pasajeros debe ser mayor a 0'),
+    monto_total: z.coerce.number().nonnegative().optional().default(0),
+    monto_pagado: z.coerce.number().nonnegative().optional().default(0)
+});
+// CORS explícito para desarrollo local con Live Server
+const ORIGENES_PERMITIDOS = [
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+    'http://localhost:3000',
+    'http://localhost:4000'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Permite también pedidos sin "origin" (Postman, curl, etc.)
+        if (!origin || ORIGENES_PERMITIDOS.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.warn('⛔ Origen bloqueado por CORS:', origin);
+            callback(new Error('No autorizado por CORS'));
+        }
+    }
+}));
+
 app.use(express.json());
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
@@ -135,13 +195,9 @@ app.get('/admin/destinos', async (req, res) => {
     } catch (e) { res.json([]); }
 });
 
-app.post('/admin/nuevo-viaje', requireAuth, async (req, res) => {
+app.post('/admin/nuevo-viaje', requireAuth, validar(schemaNuevoViaje), async (req, res) => {
     const { destino, precio, moneda, fecha, fecha_regreso, tipo, empresa, imagen_url } = req.body;
     try {
-        if (!destino || !precio || !fecha) {
-            return res.status(400).json({ error: 'Destino, precio y fecha son obligatorios' });
-        }
-
         const id_destino = await findOrCreateDestino(destino);
         const id_empresa = await findOrCreateEmpresa(empresa);
 
@@ -192,10 +248,9 @@ app.put('/admin/toggle-viaje/:id', requireAuth, async (req, res) => {
 // ============================================================
 // CLIENTES
 // ============================================================
-app.post('/admin/nuevo-cliente', requireAuth, async (req, res) => {
+app.post('/admin/nuevo-cliente', requireAuth, validar(schemaNuevoCliente), async (req, res) => {
     try {
         const { apellido, nombre, dni, telefono } = req.body;
-        if (!apellido || !dni) return res.status(400).json({ error: 'Apellido y DNI son obligatorios' });
 
         const payload = {
             apellido: capitalizar(apellido),
@@ -223,12 +278,9 @@ app.get('/admin/clientes', async (req, res) => {
 // ============================================================
 // RESERVAS
 // ============================================================
-app.post('/admin/nueva-reserva', requireAuth, async (req, res) => {
+app.post('/admin/nueva-reserva', requireAuth, validar(schemaNuevaReserva), async (req, res) => {
     try {
         const { id_cliente, id_salida, cantidad_pasajeros, monto_total, monto_pagado } = req.body;
-        if (!id_cliente || !id_salida || !cantidad_pasajeros) {
-            return res.status(400).json({ error: 'Cliente, viaje y cantidad de pasajeros son obligatorios' });
-        }
 
         const pax = parseInt(cantidad_pasajeros);
         const total = parseFloat(monto_total) || 0;
@@ -248,7 +300,6 @@ app.post('/admin/nueva-reserva', requireAuth, async (req, res) => {
         }]);
         if (error) throw error;
 
-        // Actualizamos el contador de vendidos de la salida (para el ranking de bonificaciones)
         const { data: salidaActual } = await supabase.from('salidas').select('vendidos').eq('id_salida', id_salida).single();
         if (salidaActual) {
             await supabase.from('salidas')
@@ -326,7 +377,71 @@ app.get('/admin/ranking-ventas', async (req, res) => {
         res.json(resultado);
     } catch (e) { res.json([]); }
 });
+// ============================================================
+// ASISTENTE VIRTUAL (Gemini) — /api/chat
+// ============================================================
+const { GoogleGenAI } = require('@google/genai');
+const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
 
+app.post('/api/chat', async (req, res) => {
+    const { message, history } = req.body;
+    console.log("📩 Mensaje recibido en el backend:", message);
+
+    try {
+        if (!ai) {
+            console.error("❌ GEMINI_API_KEY no está configurada en .env");
+            return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en el servidor' });
+        }
+        if (!message || !message.trim()) {
+            return res.status(400).json({ error: 'Falta el mensaje' });
+        }
+
+        const { data: viajes, error } = await supabase
+            .from('salidas')
+            .select(`fecha_salida, precio_total, moneda, tipo_viaje, destinos ( nombre ), empresas ( nombre )`)
+            .eq('activo', true)
+            .order('fecha_salida', { ascending: true });
+        if (error) throw error;
+
+        const contextoViajes = (viajes || []).map(v =>
+            `- ${v.destinos ? v.destinos.nombre : 'Destino'} | Empresa: ${v.empresas ? v.empresas.nombre : 'N/D'} | Salida: ${v.fecha_salida} | ${v.tipo_viaje} | ${v.moneda} ${v.precio_total}`
+        ).join('\n') || 'No hay salidas activas cargadas por el momento.';
+
+        const systemInstruction = `Sos "Gladys Bot", el asistente virtual de ventas de la agencia de viajes Gladys Traveltur.
+
+Estas son las salidas ACTIVAS disponibles ahora mismo (es tu única fuente de verdad):
+${contextoViajes}
+
+Reglas: respondé en español rioplatense, tono cálido y profesional, máximo 3-4 líneas, invitá a reservar por WhatsApp, no inventes datos que no estén en la lista.`;
+
+        const historialFormateado = (history || []).map(h => ({
+            role: h.role === 'bot' ? 'model' : 'user',
+            parts: [{ text: h.text }]
+        }));
+
+        const chat = ai.chats.create({
+            model: 'gemini-3.5-flash',
+            config: { systemInstruction },
+            history: historialFormateado
+        });
+
+        // Timeout de seguridad: si Gemini no responde en 15s, no dejamos el pedido colgado
+        const respuesta = await Promise.race([
+            chat.sendMessage({ message }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT_GEMINI')), 15000))
+        ]);
+
+        console.log("✅ Respuesta generada correctamente");
+        res.json({ reply: respuesta.text });
+
+    } catch (e) {
+        console.error('❌ Error en /api/chat:', e.message);
+        if (e.message === 'TIMEOUT_GEMINI') {
+            return res.status(504).json({ error: 'El asistente tardó demasiado en responder. Probá de nuevo.' });
+        }
+        res.status(500).json({ error: 'No se pudo generar la respuesta del asistente. Probá de nuevo en un momento.' });
+    }
+});
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
     app.listen(PORT, () => console.log(`🚀 Servidor Gladys OK en puerto ${PORT}`));

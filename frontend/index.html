@@ -276,6 +276,9 @@
 .dots span:nth-child(2) { animation-delay: .2s; }
 .dots span:nth-child(3) { animation-delay: .4s; }
 @keyframes blink { 0% { opacity: .2; } 20% { opacity: 1; } 100% { opacity: .2; } }
+
+
+
 </style>
 </head>
 <body>
@@ -343,6 +346,8 @@
                 </div>`).join('');
         }
         window.onload = cargar;
+
+
 </script>
 <div id="chat-widget">
     <button id="chat-toggle" aria-label="Abrir asistente virtual">💬</button>
@@ -400,7 +405,7 @@
         typing.classList.add('visible');
 
         try {
-            const res = await fetch('http://localhost:4000/api/chat', {
+            const res = await fetch(`${API}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: texto, history: historialPrevio })

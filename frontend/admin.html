@@ -35,6 +35,34 @@
     color: var(--texto-sec);
     font-weight: 600;
 }
+/* --- ESTILOS DEL RADAR DE BONOS --- */
+.radar-alerta {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 1px solid #fed7aa;
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: #9a3412;
+}
+.radar-alerta strong { font-weight: 800; }
+.radar-alerta .pulso {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #f97316; flex-shrink: 0;
+    animation: pulso-anim 1.4s infinite;
+}
+@keyframes pulso-anim {
+    0% { box-shadow: 0 0 0 0 rgba(249,115,22,0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(249,115,22,0); }
+    100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
+}
+.tab-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: #f97316; margin-left: 5px; animation: pulso-anim 1.4s infinite;
+}
     .wrapper { max-width: 1100px; margin: auto; }
 
     h1 {
@@ -627,7 +655,9 @@ function calcularBonificaciones(dataReservas) {
 }
 
 function renderTablaVentas(bonificaciones) {
-    let h = `<table><tr><th>Destino</th><th>Empresa</th><th>PAX Vendidos</th><th>Bonificación</th></tr>`;
+    const radarHtml = renderRadarBonos(calcularRadarBonos(bonificaciones));
+
+    let h = radarHtml + `<table><tr><th>Destino</th><th>Empresa</th><th>PAX Vendidos</th><th>Bonificación</th></tr>`;
     if (bonificaciones.length === 0) {
         h += `<tr><td colspan="4" style="text-align:center;color:#a0aec0;">Todavía no hay ventas registradas.</td></tr>`;
     } else {
@@ -640,12 +670,13 @@ function renderTablaVentas(bonificaciones) {
     }
     document.getElementById('tab-ran').innerHTML = h + "</table>";
 }
+
 async function getR() {
     const res = await fetch(`${API}/admin/historial-reservas`);
     const dataHistorial = await res.json();
 
     renderMetricas(calcularMetricas(dataHistorial));
-    renderTablaVentas(calcularBonificaciones(dataHistorial));
+    renderTablaVentas(calcularBonificaciones(dataHistorial)); // ya arma el radar internamente
 }
 
     document.getElementById('login-pass').addEventListener('keyup', e => { if(e.key === 'Enter') login(); });
@@ -653,6 +684,27 @@ async function getR() {
     if (document.getElementById('buscar-cliente')) {
     document.getElementById('buscar-cliente').addEventListener('input', filtrarReservas);
 }
+
+function calcularRadarBonos(bonificaciones) {
+    return bonificaciones.filter(g => !g.bonusGanado && g.faltan <= 2);
+}
+
+function renderRadarBonos(alertas) {
+    const tabBtn = document.querySelectorAll('.tab')[4]; // Ajustá el número si no es la 5ta pestaña
+    const dotViejo = tabBtn ? tabBtn.querySelector('.tab-dot') : null;
+    if (dotViejo) dotViejo.remove();
+
+    if (alertas.length === 0) return '';
+    if (tabBtn) tabBtn.insertAdjacentHTML('beforeend', '<span class="tab-dot"></span>');
+
+    return alertas.map(a => `
+        <div class="radar-alerta">
+            <span class="pulso"></span>
+            <span>🎯 <strong>${a.empresa} – ${a.destino}</strong> está a <strong>${a.faltan} PAX</strong> del bonus (lleva ${a.vendidos}/12). ¡Empujalo!</span>
+        </div>
+    `).join('');
+}
+
 </script>
 
 
