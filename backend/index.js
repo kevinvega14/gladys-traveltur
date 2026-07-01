@@ -66,18 +66,10 @@ const ORIGENES_PERMITIDOS = [
     'http://localhost:4000'
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        // Permite también pedidos sin "origin" (Postman, curl, etc.)
-        if (!origin || ORIGENES_PERMITIDOS.includes(origin)) {
-            callback(null, true);
-        } else {
-            logger.warn(`Origen bloqueado por CORS: ${origin}`);
-            callback(new Error('No autorizado por CORS'));
-        }
-    }
-}));
 
+app.use(cors({
+    origin: function (origin, callback) { callback(null, true); }
+}));
 app.use(express.json());
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
@@ -185,22 +177,6 @@ async function findOrCreateEmpresa(nombre) {
 // VIAJES (salidas)
 // ============================================================
 
-// Listado completo (lo usa tanto el admin como la web pública)
-app.get('/admin/ranking', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('salidas')
-            .select(`
-                id_salida, fecha_salida, fecha_regreso, precio_total, moneda,
-                tipo_viaje, activo, vendidos,
-                destinos ( id_destino, nombre, imagen_url ),
-                empresas ( id_empresa, nombre )
-            `)
-            .order('fecha_salida', { ascending: true });
-        if (error) throw error;
-        res.json(data);
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
 
 app.get('/admin/empresas', async (req, res) => {
     try {
