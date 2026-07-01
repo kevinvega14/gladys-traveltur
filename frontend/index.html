@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gladys Traveltur - Ofertas 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --azul: #0d2c54; --celeste: #3182ce; --gris: #f7fafc; }
+        body { background: var(--gris); font-family: 'Inter', sans-serif; margin: 0; color: #1a202c; }
+        .hero { background: linear-gradient(rgba(13,44,84,0.7), rgba(13,44,84,0.7)), url('Fondos/bariloche.jpg') center/cover; padding: 80px 20px; text-align: center; color: white; }
+        .hero h1 { margin: 0; font-size: 40px; font-weight: 900; text-transform: uppercase; }
+        .controles { background: white; width: 90%; max-width: 1000px; margin: -30px auto 40px; padding: 20px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: flex-end; }
+        .campo { display: flex; flex-direction: column; gap: 5px; font-size: 10px; font-weight: 800; color: #718096; text-transform: uppercase; }
+        input, select { padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: inherit; }
+        .btn-bus { background: var(--celeste); color: white; border: none; padding: 10px 25px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .section-title { text-align: center; font-size: 24px; color: var(--azul); font-weight: 900; margin: 50px 0 20px; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1200px; margin: auto; padding-bottom: 50px; }
+        .card { background: white; border-radius: 15px; width: 300px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card-img { width: 100%; height: 180px; object-fit: cover; background: #e2e8f0; }
+        .card-body { padding: 20px; }
+        .card-body h3 { margin: 5px 0; text-transform: uppercase; font-size: 18px; color: var(--azul); }
+        .card-body .empresa { font-size: 11px; color: #a0aec0; font-weight: 700; text-transform: uppercase; }
+        .price { font-size: 22px; font-weight: 900; color: #1a202c; margin-top: 10px; }
+        .btn-wa { background: #25d366; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; width: 100%; margin-top: 15px; display: block; text-decoration: none; text-align: center; box-sizing: border-box; }
+        .empty { text-align: center; color: #a0aec0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="hero"><h1>GLADYS TRAVELTUR</h1><p>Tu próxima aventura comienza aquí</p></div>
+    <div class="controles">
+        <div class="campo">¿A dónde? <input type="text" id="bus-txt" onkeyup="filtrar()"></div>
+        <div class="campo">Desde <input type="date" id="f-desde" onchange="filtrar()"></div>
+        <div class="campo">Hasta <input type="date" id="f-hasta" onchange="filtrar()"></div>
+        <div class="campo">Ordenar <select id="orden" onchange="filtrar()"><option value="prox">Próximos</option><option value="p-menor">Menor Precio</option></select></div>
+        <button class="btn-bus" onclick="filtrar()">BUSCAR</button>
+    </div>
+    <h2 class="section-title">✈️ Paquetes Aéreos</h2><div class="container" id="aer"></div>
+    <h2 class="section-title">🚌 Salidas en Micro</h2><div class="container" id="mic"></div>
+
+    <script>
+        const API = 'http://localhost:3000';
+        const fotos = { "bariloche": "Fondos/bariloche.jpg", "brasil": "Fondos/brasil.jpg", "carlos paz": "Fondos/carlospaz.jpg", "cataratas del iguazú": "Fondos/cataratas.jpg", "jujuy": "Fondos/jujuy.jpg", "mendoza": "Fondos/mendoza.jpg", "default": "Fondos/default.jpg" };
+        let cache = [];
+        const norm = (t) => (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        async function cargar() {
+            try {
+                const res = await fetch(`${API}/admin/ranking`);
+                const all = await res.json();
+                cache = all.filter(v => v.activo && v.destinos); // Solo activos y con destino válido
+                filtrar();
+            } catch (e) { console.error(e); }
+        }
+
+        function filtrar() {
+            const txt = norm(document.getElementById('bus-txt').value);
+            const ord = document.getElementById('orden').value;
+            const desde = document.getElementById('f-desde').value;
+            const hasta = document.getElementById('f-hasta').value;
+
+            let list = cache.filter(v => norm(v.destinos.nombre).includes(txt));
+            if (desde) list = list.filter(v => v.fecha_salida >= desde);
+            if (hasta) list = list.filter(v => v.fecha_salida <= hasta);
+            if(ord === "p-menor") list.sort((a,b) => a.precio_total - b.precio_total);
+            if(ord === "prox") list.sort((a,b) => new Date(a.fecha_salida) - new Date(b.fecha_salida));
+
+            dibujar(list.filter(v => norm(v.tipo_viaje).includes('aer')), 'aer');
+            dibujar(list.filter(v => !norm(v.tipo_viaje).includes('aer')), 'mic');
+        }
+
+        function imagenDe(v) {
+            if (v.destinos.imagen_url) return v.destinos.imagen_url;
+            return fotos[norm(v.destinos.nombre)] || fotos.default;
+        }
+
+        function dibujar(lista, id) {
+            const cont = document.getElementById(id);
+            cont.innerHTML = lista.length === 0 ? "<p class='empty'>No hay ofertas por el momento.</p>" : lista.map(v => `
+                <div class="card">
+                    <img src="${imagenDe(v)}" class="card-img" onerror="this.src='Fondos/default.jpg'">
+                    <div class="card-body">
+                        <small style="color:var(--celeste);font-weight:800">SALIDA: ${v.fecha_salida.split('-').reverse().join('/')}</small>
+                        <h3>${v.destinos.nombre}</h3>
+                        <div class="empresa">${v.empresas ? v.empresas.nombre : ''}</div>
+                        <div class="price">${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}</div>
+                        <a href="https://wa.me/5491135592160?text=${encodeURIComponent('Hola Gladys! Consulto por ' + v.destinos.nombre)}" class="btn-wa" target="_blank">CONSULTAR</a>
+                    </div>
+                </div>`).join('');
+        }
+        window.onload = cargar;
+    </script>
+</body>
+</html>
