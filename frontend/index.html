@@ -39,7 +39,9 @@
 
     <script>
         const API = 'http://localhost:3000';
-        const fotos = { "bariloche": "Fondos/bariloche.jpg", "brasil": "Fondos/brasil.jpg", "carlos paz": "Fondos/carlospaz.jpg", "cataratas del iguazú": "Fondos/cataratas.jpg", "jujuy": "Fondos/jujuy.jpg", "mendoza": "Fondos/mendoza.jpg", "default": "Fondos/default.jpg" };
+        const FOTO_DEFAULT = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600";
+        const fotos = { "bariloche": "Fondos/bariloche.jpg", "brasil": "Fondos/brasil.jpg", "carlos paz": "Fondos/carlospaz.jpg", "cataratas del iguazú": "Fondos/cataratas.jpg", "jujuy": "Fondos/jujuy.jpg", "mendoza": "Fondos/mendoza.jpg", "default": FOTO_DEFAULT };
+
         let cache = [];
         const norm = (t) => (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -70,14 +72,14 @@
 
         function imagenDe(v) {
             if (v.destinos.imagen_url) return v.destinos.imagen_url;
-            return fotos[norm(v.destinos.nombre)] || fotos.default;
+            return fotos[norm(v.destinos.nombre)] || FOTO_DEFAULT;
         }
 
         function dibujar(lista, id) {
             const cont = document.getElementById(id);
             cont.innerHTML = lista.length === 0 ? "<p class='empty'>No hay ofertas por el momento.</p>" : lista.map(v => `
                 <div class="card">
-                    <img src="${imagenDe(v)}" class="card-img" onerror="this.src='Fondos/default.jpg'">
+                    <img src="${imagenDe(v)}" class="card-img" onerror="this.onerror=null;this.src='${FOTO_DEFAULT}'">
                     <div class="card-body">
                         <small style="color:var(--celeste);font-weight:800">SALIDA: ${v.fecha_salida.split('-').reverse().join('/')}</small>
                         <h3>${v.destinos.nombre}</h3>
