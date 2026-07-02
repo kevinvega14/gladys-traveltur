@@ -370,54 +370,40 @@
     </div>
 
     <div class="panel active" id="p0">
-    <h2>Nueva Oferta</h2>
-    <div class="f-group" style="margin-bottom:26px;"><label>Destino</label><input type="text" id="v-dest" placeholder="Ej: Mendoza"></div>
-    <div class="f-row">
-        <div class="f-group"><label>Empresa</label><input type="text" id="v-emp" placeholder="Amcabi, Travelar..." list="lista-empresas"><datalist id="lista-empresas"></datalist></div>
-        <div class="f-group"><label>Transporte</label><select id="v-tipo"><option value="Micro">Micro</option><option value="Aereo">Aéreo</option></select></div>
-        <div class="f-group"><label>Moneda</label><select id="v-mon"><option value="ARS">ARS</option><option value="USD">USD</option></select></div>
-        <div class="f-group"><label>Monto</label><input type="number" id="v-pre"></div>
-        <div class="f-group"><label>Fecha Salida</label><input type="date" id="v-fec"></div>
-        <div class="f-group"><label>Fecha Regreso</label><input type="date" id="v-fec-vuelta"></div>
-    </div>
-    <div class="f-row">
-        <div class="f-group">
-            <label>Imagen (URL, opcional)</label>
-            <input type="text" id="v-img" placeholder="https://...">
+        <h2>Nueva Oferta</h2>
+        <div class="f-group" style="margin-bottom:26px;"><label>Destino</label><input type="text" id="v-dest" placeholder="Ej: Mendoza"></div>
+        <div class="f-row">
+            <div class="f-group"><label>Empresa</label><input type="text" id="v-emp" placeholder="Amcabi, Travelar..." list="lista-empresas"><datalist id="lista-empresas"></datalist></div>
+            <div class="f-group"><label>Transporte</label><select id="v-tipo"><option value="Micro">Micro</option><option value="Aereo">Aéreo</option></select></div>
+            <div class="f-group"><label>Moneda</label><select id="v-mon"><option value="ARS">ARS</option><option value="USD">USD</option></select></div>
+            <div class="f-group"><label>Monto</label><input type="number" id="v-pre"></div>
+            <div class="f-group"><label>Fecha Salida</label><input type="date" id="v-fec"></div>
+            <div class="f-group"><label>Fecha Regreso</label><input type="date" id="v-fec-vuelta"></div>
         </div>
-        <div class="f-group">
-            <label>Promoción (opcional)</label>
-            <select id="v-promo">
-                <option value="">Sin promoción</option>
-                <option value="2x1">2x1</option>
-                <option value="3x2">3x2</option>
-                <option value="4x3">4x3</option>
-            </select>
+        <div class="f-row">
+            <div class="f-group">
+                <label>Imagen (URL, opcional)</label>
+                <input type="text" id="v-img" placeholder="https://...">
+            </div>
+            <div class="f-group">
+                <label>Promoción (opcional)</label>
+                <select id="v-promo">
+                    <option value="">Sin promoción</option>
+                    <option value="2x1">2x1</option>
+                    <option value="3x2">3x2</option>
+                    <option value="4x3">4x3</option>
+                </select>
+            </div>
         </div>
-    </div>
 
-    <div class="f-group" style="margin-bottom:14px;">
-        <label>¿Qué incluye este paquete?</label>
-        <textarea id="v-incluye" rows="5" style="width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--borde); font-family:inherit; font-size:13.5px; resize:vertical;" placeholder="Se completa solo al tocar 'Autocompletar', o escribilo a mano..."></textarea>
-    </div>
+        <div class="f-group" style="margin-bottom:14px;">
+            <label>¿Qué incluye este paquete?</label>
+            <textarea id="v-incluye" rows="5" style="width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--borde); font-family:inherit; font-size:13.5px; resize:vertical;" placeholder="Se completa solo al tocar 'Autocompletar', o escribilo a mano..."></textarea>
+        </div>
 
-    <button type="button" class="btn-status disponible" onclick="autocompletarIncluye()" style="width:auto; margin-bottom:24px; cursor:pointer;">
-        ✨ Autocompletar Estándar
-    </button>
-
-    <button class="btn-blue" onclick="saveV()">PUBLICAR EN WEB</button>
-    <div id="tab-viajes-admin"></div>
-</div>
-</div>
-
-<div class="f-group" style="margin-bottom:14px;">    
-    <label>¿Qué incluye este paquete?</label>    
-    <textarea id="v-incluye" rows="5" style="width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--borde); font-family:inherit; font-size:13.5px; resize:vertical;" placeholder="Se completa solo al tocar 'Autocompletar', o escribilo a mano..."></textarea>
-</div>
-
-<button type="button" class="btn-status disponible" onclick="autocompletarIncluye()" style="width:auto; margin-bottom:24px; cursor:pointer;">
-    ✨ Autocompletar Estándar
-</button>
+        <button type="button" class="btn-status disponible" onclick="autocompletarIncluye()" style="width:auto; margin-bottom:24px; cursor:pointer;">
+            ✨ Autocompletar Estándar
+        </button>
 
         <button class="btn-blue" onclick="saveV()">PUBLICAR EN WEB</button>
         <div id="tab-viajes-admin"></div>
@@ -432,65 +418,64 @@
     </div>
 
     <div class="panel" id="p2">
-    <h2>Registrar Nueva Venta</h2>
-    <div class="f-row" style="margin-bottom:26px;">
-        <div class="f-group">
-            <label>1. Buscar por Apellido</label>
-            <input type="text" id="r-bus-ape" onkeyup="searchC()" placeholder="Ej: Gómez">
-            <div id="sug-box"></div>
+        <h2>Registrar Nueva Venta</h2>
+        <div class="f-row" style="margin-bottom:26px;">
+            <div class="f-group">
+                <label>1. Buscar por Apellido</label>
+                <input type="text" id="r-bus-ape" onkeyup="searchC()" placeholder="Ej: Gómez">
+                <div id="sug-box"></div>
+            </div>
+            <div class="f-group">
+                <label>Buscar por Nombre</label>
+                <input type="text" id="r-bus-nom" onkeyup="searchC()" placeholder="Ej: Olivia">
+            </div>
         </div>
-        <div class="f-group">
-            <label>Buscar por Nombre</label>
-            <input type="text" id="r-bus-nom" onkeyup="searchC()" placeholder="Ej: Olivia">
+        <input type="hidden" id="r-id-c">
+        <div class="f-group"><label>2. Destino</label><select id="r-via" onchange="updPrice()"></select></div>
+        <div class="f-row">
+            <div class="f-group"><label>Pasajeros</label><input type="number" id="r-can" placeholder="1" onchange="updPrice()"></div>
+            <div class="f-group"><label>Total</label><input type="number" id="r-tot"></div>
+            <div class="f-group"><label>Seña / Pagado</label><input type="number" id="r-pag" value="0"></div>
+            <div class="f-group">
+                <label>Promoción aplicada</label>
+                <select id="r-promo">
+                    <option value="">Sin promoción</option>
+                    <option value="2x1">2x1</option>
+                    <option value="3x2">3x2</option>
+                    <option value="4x3">4x3</option>
+                </select>
+            </div>
         </div>
+        <button class="btn-blue" onclick="saveR()">CONFIRMAR VENTA</button>
     </div>
-    <input type="hidden" id="r-id-c">
-    <div class="f-group"><label>2. Destino</label><select id="r-via" onchange="updPrice()"></select></div>
-    <div class="f-row">
-        <div class="f-group"><label>Pasajeros</label><input type="number" id="r-can" placeholder="1" onchange="updPrice()"></div>
-        <div class="f-group"><label>Total</label><input type="number" id="r-tot"></div>
-        <div class="f-group"><label>Seña / Pagado</label><input type="number" id="r-pag" value="0"></div>
-        <div class="f-group">
-            <label>Promoción aplicada</label>
-            <select id="r-promo">
-                <option value="">Sin promoción</option>
-                <option value="2x1">2x1</option>
-                <option value="3x2">3x2</option>
-                <option value="4x3">4x3</option>
-            </select>
-        </div>
-    </div>
-    <button class="btn-blue" onclick="saveR()">CONFIRMAR VENTA</button>
-</div>
 
     <div class="panel" id="p3">
-    <h2>Reservas Realizadas</h2>
-    <div class="f-row" style="margin-bottom:20px;">
-        <div class="f-group" style="max-width:320px;">
-            <label>Buscar</label>
-            <input type="text" id="buscar-cliente" placeholder="🔍 Apellido, DNI o empresa...">
+        <h2>Reservas Realizadas</h2>
+        <div class="f-row" style="margin-bottom:20px;">
+            <div class="f-group" style="max-width:320px;">
+                <label>Buscar</label>
+                <input type="text" id="buscar-cliente" placeholder="🔍 Apellido, DNI o empresa...">
+            </div>
+            <div class="f-group" style="max-width:220px;">
+                <label>Estado de pago</label>
+                <select id="filtro-estado-pago">
+                    <option value="todos">Todos</option>
+                    <option value="no-pagaron">No terminaron de pagar</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Parcial">Parcial</option>
+                    <option value="Completo">Completo</option>
+                    <option value="Cancelada">Canceladas</option>
+                </select>
+            </div>
         </div>
-        <div class="f-group" style="max-width:220px;">
-            <label>Estado de pago</label>
-            <select id="filtro-estado-pago">
-                <option value="todos">Todos</option>
-                <option value="no-pagaron">No terminaron de pagar</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Parcial">Parcial</option>
-                <option value="Completo">Completo</option>
-                <option value="Cancelada">Canceladas</option>
-            </select>
-        </div>
+        <div id="tab-his"></div>
     </div>
-    <div id="tab-his"></div>
-</div>
-    <div id="tab-his"></div>
-</div>
+
     <div class="panel" id="p4">
-    <h2>Control de Ventas</h2>
-    <div class="metricas-grid" id="metricas-grid"></div>
-    <div id="tab-ran"></div>
-</div>
+        <h2>Control de Ventas</h2>
+        <div class="metricas-grid" id="metricas-grid"></div>
+        <div id="tab-ran"></div>
+    </div>
 </div>
 </div>
 
@@ -1045,6 +1030,9 @@ async function getR() {
 
     document.getElementById('login-pass').addEventListener('keyup', e => { if(e.key === 'Enter') login(); });
     window.onload = checkAuth;
+    if (document.getElementById('buscar-cliente')) {
+    document.getElementById('buscar-cliente').addEventListener('input', filtrarReservas);
+}
     if (document.getElementById('filtro-estado-pago')) {
     document.getElementById('filtro-estado-pago').addEventListener('change', filtrarReservas);
 }
