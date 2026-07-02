@@ -391,6 +391,30 @@
 .modal-sidebar-nota { font-size: 11.5px; color: var(--texto-sec); text-align: center; margin-top: 12px; }
 
 @media (max-width: 640px) { .modal-body { flex-direction: column; padding: 20px; } .modal-sidebar { position: static; } }
+#promos-strip-wrap {
+    background: linear-gradient(180deg, #fff7ed 0%, transparent 100%);
+    padding-top: 10px;
+}
+.promos-title { color: #dc2626 !important; }
+
+.promos-strip {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 4px 24px 36px;
+    max-width: 1200px;
+    margin: 0 auto;
+    scroll-snap-type: x mandatory;
+}
+.promos-strip .card { min-width: 280px; max-width: 280px; flex-shrink: 0; scroll-snap-align: start; }
+.promos-strip::-webkit-scrollbar { height: 8px; }
+.promos-strip::-webkit-scrollbar-track { background: transparent; }
+.promos-strip::-webkit-scrollbar-thumb { background: #fca5a5; border-radius: 10px; }
+
+.card.tiene-promo {
+    border: 2px solid #f97316;
+    box-shadow: 0 0 0 4px rgba(249,115,22,0.12), 0 10px 30px -10px rgba(220,38,38,0.35);
+}
 </style>
 </head>
 <body>
@@ -410,7 +434,10 @@
     <button class="cat-btn" data-cat="playa"><span class="cat-icon">🏖️</span><span class="cat-label">Playa</span></button>
     <button class="cat-btn" data-cat="promo"><span class="cat-icon">🚨</span><span class="cat-label">Promos</span></button>
 </div>
-
+<div id="promos-strip-wrap" style="display:none;">
+    <h2 class="section-title promos-title">🔥 Ofertas que no podés dejar pasar</h2>
+    <div class="promos-strip" id="promos-strip"></div>
+</div>
 <h2 class="section-title" id="resultados-title">Todas las ofertas</h2>
 <div class="container" id="resultados"></div>
 
@@ -529,12 +556,12 @@ function filtrar() {
     if (ord === "prox") list.sort((a, b) => new Date(a.fecha_salida) - new Date(b.fecha_salida));
 
     dibujar(list, 'resultados');
+    renderPromosDestacadas();
 }
-
-function dibujar(lista, id) {
-    const cont = document.getElementById(id);
-    cont.innerHTML = lista.length === 0 ? "<p class='empty'>No hay ofertas por el momento.</p>" : lista.map(v => `
-        <div class="card">
+function tarjetaHTML(v) {
+    const claseDestacada = v.promo ? ' tiene-promo' : '';
+    return `
+        <div class="card${claseDestacada}">
             <div class="card-img-wrap">
                 <img src="${imagenDe(v)}" class="card-img" onerror="this.onerror=null;this.src='${FOTO_DEFAULT}'">
                 <span class="card-tag">📅 ${etiquetaFecha(v)}</span>
@@ -545,12 +572,30 @@ function dibujar(lista, id) {
                 <div class="empresa">${v.empresas ? v.empresas.nombre : ''}</div>
                 <div class="price">${formatoPrecio(v)}</div>
                 <button class="btn-wa" onclick="abrirModal(${v.id_salida})">Ver paquete</button>
-
             </div>
-        </div>`).join('');
+        </div>`;
+}
+function dibujar(lista, id) {
+    const cont = document.getElementById(id);
+    cont.innerHTML = lista.length === 0
+        ? "<p class='empty'>No hay ofertas por el momento.</p>"
+        : lista.map(tarjetaHTML).join('');
 }
 let viajeEnModal = null;
+function renderPromosDestacadas() {
+    const wrap = document.getElementById('promos-strip-wrap');
+    const strip = document.getElementById('promos-strip');
 
+    // Solo se muestra en la vista "Todos" — si el usuario ya filtró por Promos,
+    // sería redundante repetirlas arriba y abajo
+    if (categoriaActiva !== 'todos') { wrap.style.display = 'none'; return; }
+
+    const promos = cache.filter(v => v.promo);
+    if (promos.length === 0) { wrap.style.display = 'none'; return; }
+
+    strip.innerHTML = promos.map(tarjetaHTML).join('');
+    wrap.style.display = 'block';
+}
 function calcularNoches(v) {
     if (!v.fecha_regreso || v.fecha_regreso === v.fecha_salida) return null;
     const salida = new Date(v.fecha_salida + 'T00:00:00');
