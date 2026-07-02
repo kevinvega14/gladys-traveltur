@@ -164,7 +164,11 @@
         margin-top: 12px;
         letter-spacing: -0.02em;
     }
-
+    .usd-sub {
+    font-size: 60%;
+    font-weight: 700;
+    color: var(--texto-sec);
+    }
     .btn-wa {
         background: var(--verde);
         color: white;
@@ -429,7 +433,22 @@
 
         const MESES_LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+let cotizacionDolar = 1450; // fallback seguro por si la API falla
 
+async function actualizarCotizacionDolar() {
+    try {
+        const res = await fetch('https://dolarapi.com/v1/dolares/tarjeta');
+        const data = await res.json();
+        if (data && data.venta) cotizacionDolar = data.venta;
+    } catch (e) {
+        console.error('No se pudo actualizar la cotización del dólar, se usa el valor de respaldo:', e);
+    }
+}
+
+// Helper: convierte cualquier viaje a su equivalente en pesos, para comparar/ordenar/mostrar
+function precioEnARS(v) {
+    return v.moneda === 'USD' ? v.precio_total * cotizacionDolar : v.precio_total;
+}
 function formatoCorto(fecha) {
     const d = new Date(fecha + 'T00:00:00');
     return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -506,7 +525,7 @@ function filtrar() {
     if (categoriaActiva !== 'todos') {
         list = list.filter(v => categoriasDe(v).includes(categoriaActiva));
     }
-    if (ord === "p-menor") list.sort((a, b) => a.precio_total - b.precio_total);
+    if (ord === "p-menor") list.sort((a, b) => precioEnARS(a) - precioEnARS(b));
     if (ord === "prox") list.sort((a, b) => new Date(a.fecha_salida) - new Date(b.fecha_salida));
 
     dibujar(list, 'resultados');
@@ -524,7 +543,7 @@ function dibujar(lista, id) {
             <div class="card-body">
                 <h3>${v.destinos.nombre}</h3>
                 <div class="empresa">${v.empresas ? v.empresas.nombre : ''}</div>
-                <div class="price">${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}</div>
+                <div class="price">${formatoPrecio(v)}</div>
                 <button class="btn-wa" onclick="abrirModal(${v.id_salida})">Ver paquete</button>
 
             </div>
@@ -544,7 +563,14 @@ function formatoFechaLarga(fecha) {
     const d = new Date(fecha + 'T00:00:00');
     return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
-
+function formatoPrecio(v) {
+    const arsFormateado = Math.round(precioEnARS(v)).toLocaleString('es-AR');
+    if (v.moneda === 'USD') {
+        const usdFormateado = Number(v.precio_total).toLocaleString('es-AR');
+        return `$ ${arsFormateado} <span class="usd-sub">/ USD ${usdFormateado}</span>`;
+    }
+    return `$ ${arsFormateado}`;
+}
 function abrirModal(idSalida) {
     const v = cache.find(x => x.id_salida === idSalida);
     if (!v) return;
@@ -563,7 +589,7 @@ function abrirModal(idSalida) {
     document.getElementById('modal-fecha-salida').innerText = formatoFechaLarga(v.fecha_salida);
     document.getElementById('modal-fecha-regreso').innerText = v.fecha_regreso ? formatoFechaLarga(v.fecha_regreso) : '—';
 
-    document.getElementById('modal-precio').innerText = `${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}`;
+    document.getElementById('modal-precio').innerHTML = formatoPrecio(v);
 
     // Muestra el "incluye" real si el viaje lo tiene cargado; si no, la nota genérica
     if (v.incluye && v.incluye.trim()) {
@@ -619,7 +645,13 @@ window.addEventListener('load', function () {
         let mensaje = `¡Hola Gladys Traveltur! 👋 Quiero reservar el paquete a *${v.destinos.nombre}* con salida el ${formatoFechaLarga(v.fecha_salida)}`;
         if (v.fecha_regreso && v.fecha_regreso !== v.fecha_salida) mensaje += ` y regreso el ${formatoFechaLarga(v.fecha_regreso)}`;
         mensaje += `.\n\nTipo de viaje: ${v.tipo_viaje}${v.empresas ? ' (' + v.empresas.nombre + ')' : ''}`;
-        mensaje += `\nPrecio por persona: ${v.moneda === 'USD' ? 'USD' : '$'} ${Number(v.precio_total).toLocaleString('es-AR')}`;
+        if (v.moneda === 'USD') {
+    const ars = Math.round(precioEnARS(v)).toLocaleString('es-AR');
+    const usd = Number(v.precio_total).toLocaleString('es-AR');
+    mensaje += `\nPrecio por persona: $ ${ars} ARS / USD ${usd} (Cotización estimada: $ ${Math.round(cotizacionDolar).toLocaleString('es-AR')})`;
+} else {
+    mensaje += `\nPrecio por persona: $ ${Number(v.precio_total).toLocaleString('es-AR')}`;
+}
         if (v.promo) mensaje += `\nPromoción: ${v.promo}`;
         if (v.incluye) mensaje += `\n\nIncluye:\n${v.incluye}`;
         mensaje += `\n\nMi nombre es: _______`;
@@ -679,7 +711,10 @@ window.addEventListener('load', function () {
     return FOTO_DEFAULT;
 }
 
-        window.onload = cargar;
+        window.onload = async function () {
+    await actualizarCotizacionDolar();
+    cargar();
+};
 </script>
 <div id="chat-widget">
     <button id="chat-toggle" aria-label="Abrir asistente virtual">💬</button>
