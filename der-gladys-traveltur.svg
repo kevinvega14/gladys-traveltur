@@ -1,0 +1,311 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2350 1300" font-family="Inter, Arial, sans-serif">
+  <rect x="0" y="0" width="2350" height="1300" fill="#ffffff"/>
+
+  <text x="1175" y="38" text-anchor="middle" font-size="24" font-weight="800" fill="#0d2c54">DER — Sistema de Gestión Gladys Traveltur (esquema completo)</text>
+  <text x="1175" y="60" text-anchor="middle" font-size="13" fill="#6b7280">Notación relacional + Modelo Entidad-Relación real (Supabase / PostgreSQL)</text>
+
+  <!-- PANEL IZQUIERDO — NOTACIÓN RELACIONAL -->
+  <g font-size="12.5">
+    <text x="30" y="100" font-size="15" font-weight="800" fill="#0d2c54">Notación Relacional</text>
+
+    <text x="30" y="130" font-weight="800" fill="#0d2c54">CLIENTES</text>
+    <text x="30" y="149" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK:</tspan> id_cliente</text>
+    <text x="30" y="167" fill="#1a202c"><tspan font-weight="700">FK:</tspan> (ninguna)</text>
+    <text x="30" y="185" fill="#1a202c">Otros: dni, nombre, apellido, teléfono, fecha_registro</text>
+
+    <text x="30" y="217" font-weight="800" fill="#0d2c54">DESTINOS</text>
+    <text x="30" y="236" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK:</tspan> id_destino</text>
+    <text x="30" y="254" fill="#1a202c"><tspan font-weight="700">FK:</tspan> (ninguna)</text>
+    <text x="30" y="272" fill="#1a202c">Otros: nombre, ubicación, descripción, imagen_url</text>
+
+    <text x="30" y="304" font-weight="800" fill="#0d2c54">EMPRESAS</text>
+    <text x="30" y="323" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK:</tspan> id_empresa</text>
+    <text x="30" y="341" fill="#1a202c"><tspan font-weight="700">FK:</tspan> (ninguna)</text>
+    <text x="30" y="359" fill="#1a202c">Otros: nombre</text>
+
+    <text x="30" y="391" font-weight="800" fill="#0d2c54">SALIDAS</text>
+    <text x="30" y="410" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK:</tspan> id_salida</text>
+    <text x="30" y="428" fill="#1a202c"><tspan font-weight="700" font-style="italic">FK:</tspan> <tspan font-style="italic" font-weight="700">id_destino</tspan>, <tspan font-style="italic" font-weight="700">id_empresa</tspan></text>
+    <text x="30" y="446" fill="#1a202c">Otros: fecha_salida, fecha_regreso, duración_días,</text>
+    <text x="30" y="463" fill="#1a202c">duración_noches, precio_total, moneda, tipo_viaje,</text>
+    <text x="30" y="480" fill="#1a202c">bus_piso_preferencia, activo, vendidos, promo, incluye</text>
+
+    <text x="30" y="512" font-weight="800" fill="#0d2c54">RESERVAS</text>
+    <text x="30" y="531" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK:</tspan> id_reserva</text>
+    <text x="30" y="549" fill="#1a202c"><tspan font-weight="700" font-style="italic">FK:</tspan> <tspan font-style="italic" font-weight="700">id_cliente</tspan>, <tspan font-style="italic" font-weight="700">id_salida</tspan></text>
+    <text x="30" y="567" fill="#1a202c">Otros: cantidad_pasajeros, monto_total, monto_pagado,</text>
+    <text x="30" y="584" fill="#1a202c">estado_pago, estado, fecha_reserva, notas, promo</text>
+
+    <text x="30" y="616" font-weight="800" fill="#4b5563">USUARIOS <tspan font-size="10.5" font-weight="500" font-style="italic" fill="#9ca3af">(independiente)</tspan></text>
+    <text x="30" y="635" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK:</tspan> id_usuario</text>
+    <text x="30" y="653" fill="#1a202c"><tspan font-weight="700">FK:</tspan> (ninguna)</text>
+    <text x="30" y="671" fill="#1a202c">Otros: nombre, correo_electrónico, hash_contraseña, es_admin</text>
+  </g>
+
+  <g font-size="12">
+    <text x="30" y="715" font-weight="800" fill="#0d2c54">Referencias:</text>
+    <text x="30" y="738" fill="#1a202c"><tspan font-weight="700" text-decoration="underline">PK</tspan> = Clave primaria &#160;&#160;&#160; <tspan font-weight="700" font-style="italic">FK</tspan> = Clave foránea</text>
+  </g>
+
+  <line x1="500" y1="80" x2="500" y2="1260" stroke="#eef0f3" stroke-width="2"/>
+
+  <!-- PANEL DERECHO — DIAGRAMA ENTIDAD-RELACIÓN -->
+
+  <g stroke="#0d2c54" stroke-width="1.7">
+    <line x1="860" y1="750" x2="930" y2="750"/>
+    <line x1="1070" y1="750" x2="1140" y2="750"/>
+    <line x1="1250" y1="307" x2="1250" y2="481"/>
+    <line x1="1250" y1="549" x2="1250" y2="722"/>
+    <line x1="1360" y1="750" x2="1430" y2="750"/>
+    <line x1="1570" y1="750" x2="1640" y2="750"/>
+    <line x1="1860" y1="750" x2="1880" y2="750"/>
+    <line x1="2020" y1="750" x2="2040" y2="750"/>
+  </g>
+
+  <g stroke="#3182ce" stroke-width="1.3">
+    <line x1="600" y1="580" x2="750" y2="722"/>
+    <line x1="750" y1="555" x2="750" y2="722"/>
+    <line x1="900" y1="580" x2="750" y2="722"/>
+    <line x1="650" y1="900" x2="750" y2="777"/>
+    <line x1="820" y1="900" x2="750" y2="777"/>
+
+    <line x1="1180" y1="150" x2="1250" y2="252"/>
+    <line x1="1320" y1="150" x2="1250" y2="252"/>
+
+    <line x1="950"  y1="880" x2="1250" y2="777"/>
+    <line x1="1100" y1="880" x2="1250" y2="777"/>
+    <line x1="1250" y1="880" x2="1250" y2="777"/>
+    <line x1="1400" y1="880" x2="1250" y2="777"/>
+    <line x1="1550" y1="880" x2="1250" y2="777"/>
+    <line x1="1700" y1="880" x2="1250" y2="777"/>
+    <line x1="950"  y1="990" x2="1250" y2="777"/>
+    <line x1="1100" y1="990" x2="1250" y2="777"/>
+    <line x1="1250" y1="990" x2="1250" y2="777"/>
+    <line x1="1400" y1="990" x2="1250" y2="777"/>
+    <line x1="1550" y1="990" x2="1250" y2="777"/>
+    <line x1="1700" y1="990" x2="1250" y2="777"/>
+
+    <line x1="1650" y1="610" x2="1750" y2="722"/>
+    <line x1="1750" y1="580" x2="1750" y2="722"/>
+    <line x1="1850" y1="610" x2="1750" y2="722"/>
+    <line x1="1700" y1="520" x2="1750" y2="722"/>
+    <line x1="1800" y1="520" x2="1750" y2="722"/>
+    <line x1="1620" y1="890" x2="1750" y2="777"/>
+    <line x1="1740" y1="910" x2="1750" y2="777"/>
+    <line x1="1860" y1="890" x2="1750" y2="777"/>
+    <line x1="1970" y1="860" x2="1750" y2="777"/>
+
+    <line x1="2080" y1="600" x2="2150" y2="722"/>
+    <line x1="2150" y1="570" x2="2150" y2="722"/>
+    <line x1="2220" y1="600" x2="2150" y2="722"/>
+    <line x1="2080" y1="900" x2="2150" y2="777"/>
+    <line x1="2150" y1="930" x2="2150" y2="777"/>
+    <line x1="2220" y1="900" x2="2150" y2="777"/>
+  </g>
+
+  <g stroke="#9ca3af" stroke-width="1.3">
+    <line x1="2080" y1="150" x2="2150" y2="252"/>
+    <line x1="2150" y1="120" x2="2150" y2="252"/>
+    <line x1="2220" y1="150" x2="2150" y2="252"/>
+    <line x1="2090" y1="400" x2="2150" y2="307"/>
+    <line x1="2210" y1="400" x2="2150" y2="307"/>
+  </g>
+
+  <g>
+    <polygon points="1000,712 1070,750 1000,788 930,750" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="1000" y="755" text-anchor="middle" font-size="13" font-weight="700" fill="#0d2c54">Ofrece</text>
+
+    <polygon points="1250,481 1288,515 1250,549 1212,515" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="1250" y="520" text-anchor="middle" font-size="13" font-weight="700" fill="#0d2c54">Opera</text>
+
+    <polygon points="1500,712 1570,750 1500,788 1430,750" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="1500" y="740" text-anchor="middle" font-size="12" font-weight="700" fill="#0d2c54">Es reservada</text>
+    <text x="1500" y="757" text-anchor="middle" font-size="12" font-weight="700" fill="#0d2c54">en</text>
+
+    <polygon points="1950,712 2020,750 1950,788 1880,750" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="1950" y="755" text-anchor="middle" font-size="13" font-weight="700" fill="#0d2c54">Realiza</text>
+  </g>
+
+  <g>
+    <rect x="640" y="722" width="220" height="55" fill="#ffffff" stroke="#0d2c54" stroke-width="2.5"/>
+    <text x="750" y="756" text-anchor="middle" font-size="15" font-weight="800" fill="#0d2c54">DESTINOS</text>
+
+    <rect x="1140" y="252" width="220" height="55" fill="#ffffff" stroke="#0d2c54" stroke-width="2.5"/>
+    <text x="1250" y="286" text-anchor="middle" font-size="15" font-weight="800" fill="#0d2c54">EMPRESAS</text>
+
+    <rect x="1140" y="722" width="220" height="55" fill="#ffffff" stroke="#0d2c54" stroke-width="2.5"/>
+    <text x="1250" y="756" text-anchor="middle" font-size="15" font-weight="800" fill="#0d2c54">SALIDAS</text>
+
+    <rect x="1640" y="722" width="220" height="55" fill="#ffffff" stroke="#0d2c54" stroke-width="2.5"/>
+    <text x="1750" y="756" text-anchor="middle" font-size="15" font-weight="800" fill="#0d2c54">RESERVAS</text>
+
+    <rect x="2040" y="722" width="220" height="55" fill="#ffffff" stroke="#0d2c54" stroke-width="2.5"/>
+    <text x="2150" y="756" text-anchor="middle" font-size="15" font-weight="800" fill="#0d2c54">CLIENTES</text>
+
+    <rect x="2040" y="252" width="220" height="55" fill="#f7f8fa" stroke="#6b7280" stroke-width="2" stroke-dasharray="7,4"/>
+    <text x="2150" y="286" text-anchor="middle" font-size="15" font-weight="800" fill="#4b5563">USUARIOS</text>
+  </g>
+
+  <g font-size="10.5" fill="#1a202c">
+    <ellipse cx="600" cy="580" rx="62" ry="21" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="600" y="577" text-anchor="middle" text-decoration="underline">id_destino</text>
+    <text x="600" y="589" text-anchor="middle" font-size="8.5" fill="#6b7280">clave primaria</text>
+
+    <ellipse cx="750" cy="555" rx="55" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="750" y="559" text-anchor="middle">nombre</text>
+
+    <ellipse cx="900" cy="580" rx="58" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="900" y="584" text-anchor="middle">ubicación</text>
+
+    <ellipse cx="650" cy="900" rx="65" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="650" y="904" text-anchor="middle">descripción</text>
+
+    <ellipse cx="820" cy="900" rx="60" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="820" y="904" text-anchor="middle">imagen_url</text>
+
+    <ellipse cx="1180" cy="150" rx="62" ry="21" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1180" y="147" text-anchor="middle" text-decoration="underline">id_empresa</text>
+    <text x="1180" y="159" text-anchor="middle" font-size="8.5" fill="#6b7280">clave primaria</text>
+
+    <ellipse cx="1320" cy="150" rx="55" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1320" y="154" text-anchor="middle">nombre</text>
+
+    <ellipse cx="950" cy="880" rx="55" ry="21" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="950" y="877" text-anchor="middle" text-decoration="underline">id_salida</text>
+    <text x="950" y="889" text-anchor="middle" font-size="8.5" fill="#6b7280">clave primaria</text>
+
+    <ellipse cx="1100" cy="880" rx="58" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1100" y="884" text-anchor="middle" font-size="9.5">fecha_salida</text>
+
+    <ellipse cx="1250" cy="880" rx="62" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1250" y="884" text-anchor="middle" font-size="9.5">fecha_regreso</text>
+
+    <ellipse cx="1400" cy="880" rx="60" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1400" y="884" text-anchor="middle" font-size="9.5">duración_días</text>
+
+    <ellipse cx="1550" cy="880" rx="65" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1550" y="884" text-anchor="middle" font-size="9.5">duración_noches</text>
+
+    <ellipse cx="1700" cy="880" rx="58" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1700" y="884" text-anchor="middle" font-size="9.5">precio_total</text>
+
+    <ellipse cx="950" cy="990" rx="48" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="950" y="994" text-anchor="middle" font-size="9.5">moneda</text>
+
+    <ellipse cx="1100" cy="990" rx="52" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1100" y="994" text-anchor="middle" font-size="9.5">tipo_viaje</text>
+
+    <ellipse cx="1250" cy="990" rx="45" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1250" y="994" text-anchor="middle" font-size="9.5">activo</text>
+
+    <ellipse cx="1400" cy="990" rx="50" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1400" y="994" text-anchor="middle" font-size="9.5">vendidos</text>
+
+    <ellipse cx="1550" cy="990" rx="45" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1550" y="994" text-anchor="middle" font-size="9.5">promo</text>
+
+    <ellipse cx="1700" cy="990" rx="45" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1700" y="994" text-anchor="middle" font-size="9.5">incluye</text>
+
+    <ellipse cx="1650" cy="610" rx="58" ry="21" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1650" y="607" text-anchor="middle" text-decoration="underline">id_reserva</text>
+    <text x="1650" y="619" text-anchor="middle" font-size="8.5" fill="#6b7280">clave primaria</text>
+
+    <ellipse cx="1750" cy="580" rx="66" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1750" y="584" text-anchor="middle" font-size="9.3">cantidad_pasajeros</text>
+
+    <ellipse cx="1850" cy="610" rx="60" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1850" y="614" text-anchor="middle" font-size="9.3">monto_total</text>
+
+    <ellipse cx="1700" cy="520" rx="62" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1700" y="524" text-anchor="middle" font-size="9.3">monto_pagado</text>
+
+    <ellipse cx="1800" cy="520" rx="58" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1800" y="524" text-anchor="middle" font-size="9.3">estado_pago</text>
+
+    <ellipse cx="1620" cy="890" rx="45" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1620" y="894" text-anchor="middle" font-size="9.5">estado</text>
+
+    <ellipse cx="1740" cy="910" rx="60" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1740" y="914" text-anchor="middle" font-size="9.3">fecha_reserva</text>
+
+    <ellipse cx="1860" cy="890" rx="40" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1860" y="894" text-anchor="middle" font-size="9.5">notas</text>
+
+    <ellipse cx="1970" cy="860" rx="42" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="1970" y="864" text-anchor="middle" font-size="9.5">promo</text>
+
+    <ellipse cx="2080" cy="600" rx="58" ry="21" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="2080" y="597" text-anchor="middle" text-decoration="underline">id_cliente</text>
+    <text x="2080" y="609" text-anchor="middle" font-size="8.5" fill="#6b7280">clave primaria</text>
+
+    <ellipse cx="2150" cy="570" rx="52" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="2150" y="574" text-anchor="middle" font-size="9.5">apellido</text>
+
+    <ellipse cx="2220" cy="600" rx="50" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="2220" y="604" text-anchor="middle" font-size="9.5">nombre</text>
+
+    <ellipse cx="2080" cy="900" rx="35" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="2080" y="904" text-anchor="middle" font-size="9.5">dni</text>
+
+    <ellipse cx="2150" cy="930" rx="52" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="2150" y="934" text-anchor="middle" font-size="9.5">teléfono</text>
+
+    <ellipse cx="2220" cy="900" rx="62" ry="20" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="2220" y="904" text-anchor="middle" font-size="9.3">fecha_registro</text>
+  </g>
+
+  <g font-size="10.5" fill="#4b5563">
+    <ellipse cx="2080" cy="150" rx="58" ry="21" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="2080" y="147" text-anchor="middle" text-decoration="underline">id_usuario</text>
+    <text x="2080" y="159" text-anchor="middle" font-size="8.5" fill="#9ca3af">clave primaria</text>
+
+    <ellipse cx="2150" cy="120" rx="52" ry="20" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="2150" y="124" text-anchor="middle" font-size="9.5">nombre</text>
+
+    <ellipse cx="2220" cy="150" rx="70" ry="20" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="2220" y="154" text-anchor="middle" font-size="9">correo_electrónico</text>
+
+    <ellipse cx="2090" cy="400" rx="68" ry="20" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="2090" y="404" text-anchor="middle" font-size="9">hash_contraseña</text>
+
+    <ellipse cx="2210" cy="400" rx="55" ry="20" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="2210" y="404" text-anchor="middle" font-size="9.5">es_admin</text>
+  </g>
+
+  <text x="2150" y="440" text-anchor="middle" font-size="10.5" fill="#6b7280" font-style="italic">Entidad independiente — autenticación interna del panel admin.</text>
+  <text x="2150" y="456" text-anchor="middle" font-size="10.5" fill="#6b7280" font-style="italic">No posee FK ni es referenciada por ninguna otra tabla del esquema real.</text>
+
+  <g font-size="13" font-weight="800" fill="#dc2626">
+    <rect x="866" y="736" width="16" height="16" fill="#ffffff"/><text x="874" y="749" text-anchor="middle">1</text>
+    <rect x="1042" y="736" width="20" height="16" fill="#ffffff"/><text x="1052" y="749" text-anchor="middle">N</text>
+
+    <rect x="1236" y="315" width="16" height="16" fill="#ffffff"/><text x="1244" y="328" text-anchor="middle">1</text>
+    <rect x="1236" y="700" width="20" height="16" fill="#ffffff"/><text x="1246" y="713" text-anchor="middle">N</text>
+
+    <rect x="1366" y="736" width="16" height="16" fill="#ffffff"/><text x="1374" y="749" text-anchor="middle">1</text>
+    <rect x="1542" y="736" width="20" height="16" fill="#ffffff"/><text x="1552" y="749" text-anchor="middle">N</text>
+
+    <rect x="1866" y="736" width="20" height="16" fill="#ffffff"/><text x="1876" y="749" text-anchor="middle">N</text>
+    <rect x="2026" y="736" width="16" height="16" fill="#ffffff"/><text x="2034" y="749" text-anchor="middle">1</text>
+  </g>
+
+  <g font-size="12" fill="#1a202c">
+    <rect x="560" y="1150" width="16" height="16" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="584" y="1163">Entidad</text>
+
+    <ellipse cx="700" cy="1158" rx="18" ry="10" fill="#ffffff" stroke="#3182ce" stroke-width="1.5"/>
+    <text x="728" y="1163">Atributo (subrayado = clave primaria)</text>
+
+    <polygon points="1030,1148 1046,1158 1030,1168 1014,1158" fill="#eaf2ff" stroke="#0d2c54" stroke-width="1.5"/>
+    <text x="1056" y="1163">Relación</text>
+
+    <text x="1150" y="1163" font-weight="800" fill="#dc2626">1 / N</text>
+    <text x="1185" y="1163">Cardinalidad</text>
+
+    <rect x="1300" y="1150" width="16" height="16" fill="#f7f8fa" stroke="#6b7280" stroke-width="2" stroke-dasharray="5,3"/>
+    <text x="1324" y="1163">Entidad independiente (sin relación)</text>
+  </g>
+
+  <text x="1425" y="1220" text-anchor="middle" font-size="11" fill="#9ca3af">Esquema documentado también en database/schema-notes.md — Ver database/diagrama-clases-gladys-traveltur.svg para el diagrama de clases del sistema</text>
+</svg>

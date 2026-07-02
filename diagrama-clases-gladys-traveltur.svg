@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 900" font-family="Inter, Arial, sans-serif">
+  <rect x="0" y="0" width="1480" height="900" fill="#ffffff"/>
+
+  <text x="740" y="35" text-anchor="middle" font-size="22" font-weight="800" fill="#0d2c54">Diagrama de Clases — Gladys Traveltur</text>
+  <text x="740" y="56" text-anchor="middle" font-size="12" fill="#6b7280">Entidades de datos + módulos funcionales del sistema</text>
+
+  <!-- ===================== LÍNEAS DE RELACIÓN ===================== -->
+  <g stroke="#0d2c54" stroke-width="1.6" fill="none">
+    <line x1="250" y1="266" x2="470" y2="355"/>
+    <line x1="575" y1="182" x2="575" y2="240"/>
+    <line x1="680" y1="360" x2="800" y2="345"/>
+    <line x1="1010" y1="345" x2="1130" y2="280"/>
+
+    <line x1="250" y1="620" x2="330" y2="620"/>
+    <line x1="440" y1="550" x2="595" y2="471"/>
+    <line x1="500" y1="550" x2="940" y2="441"/>
+    <line x1="700" y1="550" x2="630" y2="471"/>
+    <line x1="830" y1="600" x2="910" y2="600"/>
+    <line x1="1240" y1="550" x2="990" y2="441"/>
+  </g>
+
+  <!-- Etiquetas de relación -->
+  <g font-size="10" font-style="italic" fill="#6b7280">
+    <rect x="315" y="298" width="60" height="14" fill="#ffffff"/>
+    <text x="345" y="309" text-anchor="middle">ofrece</text>
+
+    <rect x="548" y="204" width="55" height="14" fill="#ffffff"/>
+    <text x="575" y="215" text-anchor="middle">opera</text>
+
+    <rect x="700" y="345" width="80" height="14" fill="#ffffff"/>
+    <text x="740" y="356" text-anchor="middle">genera</text>
+
+    <rect x="1030" y="300" width="90" height="14" fill="#ffffff"/>
+    <text x="1075" y="311" text-anchor="middle">corresponde a</text>
+
+    <rect x="255" y="608" width="65" height="14" fill="#ffffff"/>
+    <text x="287" y="619" text-anchor="middle">autentica</text>
+
+    <rect x="480" y="500" width="70" height="14" fill="#ffffff"/>
+    <text x="515" y="511" text-anchor="middle">gestiona</text>
+
+    <rect x="660" y="480" width="70" height="14" fill="#ffffff"/>
+    <text x="695" y="491" text-anchor="middle">gestiona</text>
+
+    <rect x="620" y="500" width="60" height="14" fill="#ffffff"/>
+    <text x="650" y="511" text-anchor="middle">muestra</text>
+
+    <rect x="838" y="592" width="40" height="14" fill="#ffffff"/>
+    <text x="858" y="603" text-anchor="middle">usa</text>
+
+    <rect x="1050" y="480" width="60" height="14" fill="#ffffff"/>
+    <text x="1080" y="491" text-anchor="middle">analiza</text>
+  </g>
+
+  <!-- Cardinalidades -->
+  <g font-size="12" font-weight="800" fill="#dc2626">
+    <rect x="256" y="256" width="14" height="14" fill="#ffffff"/><text x="263" y="267" text-anchor="middle">1</text>
+    <rect x="452" y="345" width="18" height="14" fill="#ffffff"/><text x="461" y="356" text-anchor="middle">N</text>
+
+    <rect x="567" y="186" width="14" height="14" fill="#ffffff"/><text x="574" y="197" text-anchor="middle">1</text>
+    <rect x="567" y="228" width="18" height="14" fill="#ffffff"/><text x="576" y="239" text-anchor="middle">N</text>
+
+    <rect x="674" y="348" width="14" height="14" fill="#ffffff"/><text x="681" y="359" text-anchor="middle">1</text>
+    <rect x="784" y="333" width="18" height="14" fill="#ffffff"/><text x="793" y="344" text-anchor="middle">N</text>
+
+    <rect x="994" y="333" width="18" height="14" fill="#ffffff"/><text x="1003" y="344" text-anchor="middle">N</text>
+    <rect x="1112" y="266" width="14" height="14" fill="#ffffff"/><text x="1119" y="277" text-anchor="middle">1</text>
+  </g>
+
+  <!-- ===================== CLASES ===================== -->
+  <!-- DESTINO -->
+  <g>
+    <rect x="40" y="210" width="210" height="112" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="40" y1="234" x2="250" y2="234" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="145" y="228" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">Destino</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="145" y="252" text-anchor="middle">id_destino</text>
+      <text x="145" y="267" text-anchor="middle">nombre</text>
+      <text x="145" y="282" text-anchor="middle">ubicacion</text>
+      <text x="145" y="297" text-anchor="middle">imagen_url</text>
+    </g>
+  </g>
+
+  <!-- EMPRESA -->
+  <g>
+    <rect x="470" y="100" width="210" height="82" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="470" y1="124" x2="680" y2="124" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="575" y="118" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">Empresa</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="575" y="142" text-anchor="middle">id_empresa</text>
+      <text x="575" y="157" text-anchor="middle">nombre</text>
+    </g>
+  </g>
+
+  <!-- SALIDA -->
+  <g>
+    <rect x="470" y="240" width="210" height="231" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="470" y1="264" x2="680" y2="264" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="575" y="258" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">Salida</text>
+    <g font-size="10.2" fill="#1a202c">
+      <text x="575" y="281" text-anchor="middle">id_salida</text>
+      <text x="575" y="296" text-anchor="middle">fecha_salida</text>
+      <text x="575" y="311" text-anchor="middle">fecha_regreso</text>
+      <text x="575" y="326" text-anchor="middle">precio_total</text>
+      <text x="575" y="341" text-anchor="middle">moneda</text>
+      <text x="575" y="356" text-anchor="middle">tipo_viaje</text>
+      <text x="575" y="371" text-anchor="middle">promo</text>
+      <text x="575" y="386" text-anchor="middle">activo</text>
+      <text x="575" y="401" text-anchor="middle">vendidos</text>
+    </g>
+    <g font-size="10" fill="#0d2c54" font-weight="600">
+      <text x="575" y="430" text-anchor="middle">+calcularPasajerosParaBono()</text>
+      <text x="575" y="445" text-anchor="middle">+estaDisponible()</text>
+    </g>
+  </g>
+
+  <!-- RESERVA -->
+  <g>
+    <rect x="800" y="240" width="210" height="201" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="800" y1="264" x2="1010" y2="264" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="905" y="258" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">Reserva</text>
+    <g font-size="10.2" fill="#1a202c">
+      <text x="905" y="281" text-anchor="middle">id_reserva</text>
+      <text x="905" y="296" text-anchor="middle">cantidad_pasajeros</text>
+      <text x="905" y="311" text-anchor="middle">monto_total</text>
+      <text x="905" y="326" text-anchor="middle">monto_pagado</text>
+      <text x="905" y="341" text-anchor="middle">estado_pago</text>
+      <text x="905" y="356" text-anchor="middle">estado</text>
+      <text x="905" y="371" text-anchor="middle">promo</text>
+    </g>
+    <g font-size="10" fill="#0d2c54" font-weight="600">
+      <text x="905" y="400" text-anchor="middle">+registrarPago(monto)</text>
+      <text x="905" y="415" text-anchor="middle">+cancelar()</text>
+    </g>
+  </g>
+
+  <!-- CLIENTE -->
+  <g>
+    <rect x="1130" y="210" width="210" height="127" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="1130" y1="234" x2="1340" y2="234" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="1235" y="228" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">Cliente</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="1235" y="252" text-anchor="middle">id_cliente</text>
+      <text x="1235" y="267" text-anchor="middle">dni</text>
+      <text x="1235" y="282" text-anchor="middle">nombre</text>
+      <text x="1235" y="297" text-anchor="middle">apellido</text>
+      <text x="1235" y="312" text-anchor="middle">telefono</text>
+    </g>
+  </g>
+
+  <!-- USUARIO -->
+  <g>
+    <rect x="40" y="550" width="210" height="141" fill="#f7f8fa" stroke="#6b7280" stroke-width="2" stroke-dasharray="6,4"/>
+    <line x1="40" y1="574" x2="250" y2="574" stroke="#6b7280" stroke-width="1.2"/>
+    <text x="145" y="568" text-anchor="middle" font-size="13.5" font-weight="800" fill="#4b5563">Usuario</text>
+    <g font-size="10.5" fill="#4b5563">
+      <text x="145" y="591" text-anchor="middle">id_usuario</text>
+      <text x="145" y="606" text-anchor="middle">nombre</text>
+      <text x="145" y="621" text-anchor="middle">es_admin</text>
+    </g>
+    <g font-size="10" fill="#4b5563" font-weight="600">
+      <text x="145" y="650" text-anchor="middle">+login(password)</text>
+      <text x="145" y="665" text-anchor="middle">+logout()</text>
+    </g>
+  </g>
+
+  <!-- PANEL ADMIN -->
+  <g>
+    <rect x="330" y="550" width="210" height="156" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="330" y1="574" x2="540" y2="574" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="435" y="568" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">PanelAdmin</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="435" y="591" text-anchor="middle">tokenSesion</text>
+    </g>
+    <g font-size="9.7" fill="#0d2c54" font-weight="600">
+      <text x="435" y="620" text-anchor="middle">+cargarViaje()</text>
+      <text x="435" y="635" text-anchor="middle">+registrarVenta()</text>
+      <text x="435" y="650" text-anchor="middle">+registrarPago()</text>
+      <text x="435" y="665" text-anchor="middle">+cancelarReserva()</text>
+      <text x="435" y="680" text-anchor="middle">+autocompletarIncluye()</text>
+    </g>
+  </g>
+
+  <!-- SITIO PUBLICO -->
+  <g>
+    <rect x="620" y="550" width="210" height="126" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <line x1="620" y1="574" x2="830" y2="574" stroke="#0d2c54" stroke-width="1.4"/>
+    <text x="725" y="568" text-anchor="middle" font-size="13.5" font-weight="800" fill="#0d2c54">SitioPublico</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="725" y="591" text-anchor="middle">cotizacionDolar</text>
+    </g>
+    <g font-size="10" fill="#0d2c54" font-weight="600">
+      <text x="725" y="620" text-anchor="middle">+filtrarOfertas()</text>
+      <text x="725" y="635" text-anchor="middle">+abrirModalDetalle()</text>
+      <text x="725" y="650" text-anchor="middle">+enviarConsultaWhatsApp()</text>
+    </g>
+  </g>
+
+  <!-- ASISTENTE VIRTUAL -->
+  <g>
+    <rect x="910" y="550" width="210" height="111" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+    <line x1="910" y1="574" x2="1120" y2="574" stroke="#c2410c" stroke-width="1.4"/>
+    <text x="1015" y="568" text-anchor="middle" font-size="13.5" font-weight="800" fill="#c2410c">AsistenteVirtual</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="1015" y="591" text-anchor="middle">historialChat</text>
+    </g>
+    <g font-size="10" fill="#c2410c" font-weight="600">
+      <text x="1015" y="620" text-anchor="middle">+enviarMensaje(texto)</text>
+      <text x="1015" y="635" text-anchor="middle">+generarContexto()</text>
+    </g>
+  </g>
+
+  <!-- SISTEMA BONIFICACIONES -->
+  <g>
+    <rect x="1160" y="550" width="210" height="111" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+    <line x1="1160" y1="574" x2="1370" y2="574" stroke="#c2410c" stroke-width="1.4"/>
+    <text x="1265" y="568" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">SistemaBonificaciones</text>
+    <g font-size="10.5" fill="#1a202c">
+      <text x="1265" y="591" text-anchor="middle">metaBonus = 12</text>
+    </g>
+    <g font-size="10" fill="#c2410c" font-weight="600">
+      <text x="1265" y="620" text-anchor="middle">+calcularBonificaciones()</text>
+      <text x="1265" y="635" text-anchor="middle">+detectarRadarBonos()</text>
+    </g>
+  </g>
+
+  <!-- ===================== LEYENDA ===================== -->
+  <g font-size="11.5" fill="#1a202c">
+    <rect x="40" y="740" width="16" height="16" fill="#ffffff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="64" y="752">Clase de datos (tabla)</text>
+
+    <rect x="230" y="740" width="16" height="16" fill="#eaf2ff" stroke="#0d2c54" stroke-width="2"/>
+    <text x="254" y="752">Módulo del sistema</text>
+
+    <rect x="420" y="740" width="16" height="16" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+    <text x="444" y="752">Módulo inteligente (IA / bonos)</text>
+
+    <rect x="660" y="740" width="16" height="16" fill="#f7f8fa" stroke="#6b7280" stroke-width="2" stroke-dasharray="5,3"/>
+    <text x="684" y="752">Módulo independiente (auth)</text>
+
+    <text x="900" y="752" font-weight="800" fill="#dc2626">1 / N</text>
+    <text x="930" y="752">Multiplicidad de la asociación</text>
+  </g>
+
+  <text x="740" y="800" text-anchor="middle" font-size="10.5" fill="#9ca3af">Nota: PanelAdmin y SitioPublico representan la lógica de admin.html / index.html; el backend Express expone esta lógica como API REST.</text>
+  <text x="740" y="818" text-anchor="middle" font-size="10.5" fill="#9ca3af">Esquema completo de columnas documentado en database/schema-notes.md — ver también database/der-gladys-traveltur.svg para el modelo Entidad-Relación</text>
+</svg>
