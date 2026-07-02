@@ -381,7 +381,7 @@ app.get('/admin/historial-reservas', async (req, res) => {
             .from('reservas')
             .select(`
                 id_reserva, cantidad_pasajeros, monto_total, monto_pagado, estado_pago, estado, fecha_reserva, promo,
-                clientes ( nombre, apellido ),
+                clientes ( nombre, apellido, dni ),
                 salidas ( fecha_salida, tipo_viaje, destinos ( nombre ), empresas ( nombre ) )
             `)
             .order('id_reserva', { ascending: false });
