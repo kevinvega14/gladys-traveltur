@@ -370,30 +370,44 @@
     </div>
 
     <div class="panel active" id="p0">
-        <h2>Nueva Oferta</h2>
-        <div class="f-group"><label>Destino</label><input type="text" id="v-dest" placeholder="Ej: Mendoza"></div>
-        <div class="f-row">
-            <div class="f-group"><label>Empresa</label><input type="text" id="v-emp" placeholder="Amcabi, Travelar..." list="lista-empresas"><datalist id="lista-empresas"></datalist></div>
-            <div class="f-group"><label>Transporte</label><select id="v-tipo"><option value="Micro">Micro</option><option value="Aereo">Aéreo</option></select></div>
-            <div class="f-group"><label>Moneda</label><select id="v-mon"><option value="ARS">ARS</option><option value="USD">USD</option></select></div>
-            <div class="f-group"><label>Monto</label><input type="number" id="v-pre"></div>
-            <div class="f-group"><label>Fecha Salida</label><input type="date" id="v-fec"></div>
-            <div class="f-group"><label>Fecha Regreso</label><input type="date" id="v-fec-vuelta"></div>
-        </div>
-        <div class="f-row">    
-    <div class="f-group">
-        <label>Imagen (URL, opcional)</label>
-        <input type="text" id="v-img" placeholder="https://...">
-    </div>    
-    <div class="f-group">
-        <label>Promoción (opcional)</label>        
-        <select id="v-promo">            
-            <option value="">Sin promoción</option>            
-            <option value="2x1">2x1</option>            
-            <option value="3x2">3x2</option>            
-            <option value="4x3">4x3</option>        
-        </select>    
+    <h2>Nueva Oferta</h2>
+    <div class="f-group" style="margin-bottom:26px;"><label>Destino</label><input type="text" id="v-dest" placeholder="Ej: Mendoza"></div>
+    <div class="f-row">
+        <div class="f-group"><label>Empresa</label><input type="text" id="v-emp" placeholder="Amcabi, Travelar..." list="lista-empresas"><datalist id="lista-empresas"></datalist></div>
+        <div class="f-group"><label>Transporte</label><select id="v-tipo"><option value="Micro">Micro</option><option value="Aereo">Aéreo</option></select></div>
+        <div class="f-group"><label>Moneda</label><select id="v-mon"><option value="ARS">ARS</option><option value="USD">USD</option></select></div>
+        <div class="f-group"><label>Monto</label><input type="number" id="v-pre"></div>
+        <div class="f-group"><label>Fecha Salida</label><input type="date" id="v-fec"></div>
+        <div class="f-group"><label>Fecha Regreso</label><input type="date" id="v-fec-vuelta"></div>
     </div>
+    <div class="f-row">
+        <div class="f-group">
+            <label>Imagen (URL, opcional)</label>
+            <input type="text" id="v-img" placeholder="https://...">
+        </div>
+        <div class="f-group">
+            <label>Promoción (opcional)</label>
+            <select id="v-promo">
+                <option value="">Sin promoción</option>
+                <option value="2x1">2x1</option>
+                <option value="3x2">3x2</option>
+                <option value="4x3">4x3</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="f-group" style="margin-bottom:14px;">
+        <label>¿Qué incluye este paquete?</label>
+        <textarea id="v-incluye" rows="5" style="width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--borde); font-family:inherit; font-size:13.5px; resize:vertical;" placeholder="Se completa solo al tocar 'Autocompletar', o escribilo a mano..."></textarea>
+    </div>
+
+    <button type="button" class="btn-status disponible" onclick="autocompletarIncluye()" style="width:auto; margin-bottom:24px; cursor:pointer;">
+        ✨ Autocompletar Estándar
+    </button>
+
+    <button class="btn-blue" onclick="saveV()">PUBLICAR EN WEB</button>
+    <div id="tab-viajes-admin"></div>
+</div>
 </div>
 
 <div class="f-group" style="margin-bottom:14px;">    
@@ -418,14 +432,24 @@
     </div>
 
     <div class="panel" id="p2">
-        <h2>Registrar Nueva Venta</h2>
-        <div class="f-group"><label>1. Buscar Cliente</label><input type="text" id="r-bus" onkeyup="searchC()"><div id="sug-box"></div><input type="hidden" id="r-id-c"></div>
-        <div class="f-group"><label>2. Destino</label><select id="r-via" onchange="updPrice()"></select></div>
-        <div class="f-row">
-            <div class="f-group"><label>Pax</label><input type="number" id="r-can" value="1" onchange="updPrice()"></div>
-            <div class="f-group"><label>Total</label><input type="number" id="r-tot"></div>
-            <div class="f-group"><label>Seña / Pagado</label><input type="number" id="r-pag" value="0"></div>
-        
+    <h2>Registrar Nueva Venta</h2>
+    <div class="f-row" style="margin-bottom:26px;">
+        <div class="f-group">
+            <label>1. Buscar por Apellido</label>
+            <input type="text" id="r-bus-ape" onkeyup="searchC()" placeholder="Ej: Gómez">
+            <div id="sug-box"></div>
+        </div>
+        <div class="f-group">
+            <label>Buscar por Nombre</label>
+            <input type="text" id="r-bus-nom" onkeyup="searchC()" placeholder="Ej: Olivia">
+        </div>
+    </div>
+    <input type="hidden" id="r-id-c">
+    <div class="f-group"><label>2. Destino</label><select id="r-via" onchange="updPrice()"></select></div>
+    <div class="f-row">
+        <div class="f-group"><label>Pasajeros</label><input type="number" id="r-can" placeholder="1" onchange="updPrice()"></div>
+        <div class="f-group"><label>Total</label><input type="number" id="r-tot"></div>
+        <div class="f-group"><label>Seña / Pagado</label><input type="number" id="r-pag" value="0"></div>
         <div class="f-group">
             <label>Promoción aplicada</label>
             <select id="r-promo">
@@ -435,15 +459,31 @@
                 <option value="4x3">4x3</option>
             </select>
         </div>
-        </div>
-        <button class="btn-blue" onclick="saveR()">CONFIRMAR VENTA</button>
     </div>
+    <button class="btn-blue" onclick="saveR()">CONFIRMAR VENTA</button>
+</div>
 
     <div class="panel" id="p3">
     <h2>Reservas Realizadas</h2>
-    <div class="f-group" style="max-width:350px; margin-bottom:20px;">
-        <input type="text" id="buscar-cliente" placeholder="🔍 Buscar por apellido de cliente...">
+    <div class="f-row" style="margin-bottom:20px;">
+        <div class="f-group" style="max-width:320px;">
+            <label>Buscar</label>
+            <input type="text" id="buscar-cliente" placeholder="🔍 Apellido, DNI o empresa...">
+        </div>
+        <div class="f-group" style="max-width:220px;">
+            <label>Estado de pago</label>
+            <select id="filtro-estado-pago">
+                <option value="todos">Todos</option>
+                <option value="no-pagaron">No terminaron de pagar</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Parcial">Parcial</option>
+                <option value="Completo">Completo</option>
+                <option value="Cancelada">Canceladas</option>
+            </select>
+        </div>
     </div>
+    <div id="tab-his"></div>
+</div>
     <div id="tab-his"></div>
 </div>
     <div class="panel" id="p4">
@@ -708,16 +748,19 @@ function autocompletarIncluye() {
 
     function updPrice() {
         const v = viaCache.find(x => x.id_salida == document.getElementById('r-via').value);
-        if(v) document.getElementById('r-tot').value = v.precio_total * (document.getElementById('r-can').value || 1);
+        if(v) document.getElementById('r-tot').value = v.precio_total * (Number(document.getElementById('r-can').value) || 1);
     }
 
     async function saveR() {
     if (!document.getElementById('r-id-c').value) { showToast('Seleccioná un cliente de la lista de sugerencias', 'error'); return; }
     if (!document.getElementById('r-via').value) { showToast('Seleccioná un destino', 'error'); return; }
+    const pax = document.getElementById('r-can').value;
+    if (!pax || Number(pax) < 1) { showToast('Ingresá la cantidad de pasajeros', 'error'); return; }
+
     const body = {
         id_cliente: document.getElementById('r-id-c').value,
         id_salida: document.getElementById('r-via').value,
-        cantidad_pasajeros: document.getElementById('r-can').value,
+        cantidad_pasajeros: pax,
         monto_total: document.getElementById('r-tot').value,
         monto_pagado: document.getElementById('r-pag').value,
         promo: document.getElementById('r-promo').value
@@ -750,19 +793,36 @@ function autocompletarIncluye() {
     async function getCCache() { const res = await fetch(`${API}/admin/clientes`); cliCache = await res.json(); }
 
     function searchC() {
-        const t = document.getElementById('r-bus').value.toLowerCase();
-        const sug = document.getElementById('sug-box'); sug.innerHTML = "";
-        if(t.length < 2) { sug.style.display="none"; return; }
-        const f = cliCache.filter(c => (c.apellido||'').toLowerCase().includes(t) || (c.dni||'').includes(t));
-        if(f.length > 0) {
-            sug.style.display="block";
-            f.forEach(c => {
-                const d = document.createElement('div'); d.className="sug-item"; d.innerText = `${(c.apellido||'').toUpperCase()}, ${c.nombre||''}`;
-                d.onclick = () => { document.getElementById('r-id-c').value = c.id_cliente; document.getElementById('r-bus').value = (c.apellido||'').toUpperCase(); sug.style.display="none"; };
-                sug.appendChild(d);
-            });
-        } else sug.style.display="none";
-    }
+    const tApe = document.getElementById('r-bus-ape').value.toLowerCase().trim();
+    const tNom = document.getElementById('r-bus-nom').value.toLowerCase().trim();
+    const sug = document.getElementById('sug-box'); sug.innerHTML = "";
+
+    if (tApe.length < 2 && tNom.length < 2) { sug.style.display = "none"; return; }
+
+    const f = cliCache.filter(c => {
+        const apellido = (c.apellido || '').toLowerCase();
+        const nombre = (c.nombre || '').toLowerCase();
+        const dni = (c.dni || '').toLowerCase();
+        const matchApe = tApe.length >= 2 ? (apellido.includes(tApe) || dni.includes(tApe)) : true;
+        const matchNom = tNom.length >= 2 ? nombre.includes(tNom) : true;
+        return matchApe && matchNom;
+    });
+
+    if (f.length > 0) {
+        sug.style.display = "block";
+        f.forEach(c => {
+            const d = document.createElement('div'); d.className = "sug-item";
+            d.innerText = `${(c.apellido||'').toUpperCase()}, ${c.nombre||''} — DNI ${c.dni||'s/d'}`;
+            d.onclick = () => {
+                document.getElementById('r-id-c').value = c.id_cliente;
+                document.getElementById('r-bus-ape').value = (c.apellido||'').toUpperCase();
+                document.getElementById('r-bus-nom').value = c.nombre||'';
+                sug.style.display = "none";
+            };
+            sug.appendChild(d);
+        });
+    } else sug.style.display = "none";
+}
 function showToast(message, type = 'info', duration = 3500) {
     const container = document.getElementById('toast-container');
     const iconos = { success: '✅', error: '⚠️', info: 'ℹ️' };
@@ -794,11 +854,12 @@ function formatMonto(valor) {
     }
 
     async function getH() {
-        const res = await fetch(`${API}/admin/historial-reservas`);
-        todasLasReservas = await res.json();
-        document.getElementById('buscar-cliente').value = '';
-        renderHistorial(todasLasReservas);
-    }
+    const res = await fetch(`${API}/admin/historial-reservas`);
+    todasLasReservas = await res.json();
+    document.getElementById('buscar-cliente').value = '';
+    document.getElementById('filtro-estado-pago').value = 'todos';
+    renderHistorial(todasLasReservas);
+}
 
     async function cancelarR(id) {
         if(confirm("¿Cancelar esta reserva?")) {
@@ -855,11 +916,27 @@ async function registrarPago(id, montoTotal, montoPagado) {
 }
 function filtrarReservas() {
     const texto = document.getElementById('buscar-cliente').value.trim().toLowerCase();
-    if (!texto) { renderHistorial(todasLasReservas); return; }
+    const estadoFiltro = document.getElementById('filtro-estado-pago').value;
 
-    const filtradas = todasLasReservas.filter(r =>
-        r.clientes && r.clientes.apellido && r.clientes.apellido.toLowerCase().includes(texto)
-    );
+    let filtradas = todasLasReservas;
+
+    if (texto) {
+        filtradas = filtradas.filter(r => {
+            const apellido = r.clientes ? (r.clientes.apellido || '').toLowerCase() : '';
+            const dni = r.clientes ? (r.clientes.dni || '').toLowerCase() : '';
+            const empresa = r.salidas && r.salidas.empresas ? r.salidas.empresas.nombre.toLowerCase() : '';
+            return apellido.includes(texto) || dni.includes(texto) || empresa.includes(texto);
+        });
+    }
+
+    if (estadoFiltro === 'no-pagaron') {
+        filtradas = filtradas.filter(r => r.estado !== 'Cancelada' && (r.estado_pago === 'Pendiente' || r.estado_pago === 'Parcial'));
+    } else if (estadoFiltro === 'Cancelada') {
+        filtradas = filtradas.filter(r => r.estado === 'Cancelada');
+    } else if (estadoFiltro !== 'todos') {
+        filtradas = filtradas.filter(r => r.estado !== 'Cancelada' && r.estado_pago === estadoFiltro);
+    }
+
     renderHistorial(filtradas);
 }
 
@@ -968,8 +1045,8 @@ async function getR() {
 
     document.getElementById('login-pass').addEventListener('keyup', e => { if(e.key === 'Enter') login(); });
     window.onload = checkAuth;
-    if (document.getElementById('buscar-cliente')) {
-    document.getElementById('buscar-cliente').addEventListener('input', filtrarReservas);
+    if (document.getElementById('filtro-estado-pago')) {
+    document.getElementById('filtro-estado-pago').addEventListener('change', filtrarReservas);
 }
 
 function calcularRadarBonos(bonificaciones) {
