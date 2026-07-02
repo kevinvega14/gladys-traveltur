@@ -256,7 +256,7 @@ app.post('/admin/nuevo-cliente', requireAuth, validar(schemaNuevoCliente), async
             apellido: capitalizar(apellido),
             nombre: capitalizar(nombre),
             dni: dni.toString().trim(),
-            'teléfono': telefono || null
+            'telefono': telefono || null
         };
         const { error } = await supabase.from('clientes').insert([payload]);
         if (error) throw error;
